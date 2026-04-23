@@ -9,10 +9,15 @@ import {
   CalendarClock, CheckCircle2, Receipt, Download, AlertTriangle,
   TrendingUp, FileText, Bell, Calculator
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { MockBadge } from "@/components/MockBadge";
 
-const historico = [
+interface HistItem { mes: string; valor: number; status: string; venc: string; codigo: string; }
+
+const HISTORICO_MOCK: HistItem[] = [
   { mes: "Junho/2025", valor: 75.9, status: "pendente", venc: "20/07/2025", codigo: "85800000007 590120250 720250000 099912345" },
   { mes: "Maio/2025", valor: 75.9, status: "pago", venc: "20/06/2025", codigo: "85800000007 590120250 620250000 088812345" },
   { mes: "Abril/2025", valor: 71.6, status: "pago", venc: "20/05/2025", codigo: "85800000007 160120250 520250000 077712345" },
@@ -21,13 +26,36 @@ const historico = [
   { mes: "Janeiro/2025", valor: 71.6, status: "pago", venc: "20/02/2025", codigo: "85800000007 160120250 220250000 044412345" },
 ];
 
-const limites = [
-  { label: "Receita acumulada (12 meses)", valor: 56400, max: 81000 },
-];
+const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
 const Impostos = () => {
+  const { user } = useAuth();
   const [checked, setChecked] = useState(false);
-  const limite = limites[0];
+  const [historico, setHistorico] = useState<HistItem[]>(HISTORICO_MOCK);
+  const [isMock, setIsMock] = useState(true);
+  const [revenue12m, setRevenue12m] = useState(56400);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      const { data: taxes } = await supabase.from("taxes").select("*").eq("user_id", user.id).order("reference_year", { ascending: false }).order("reference_month", { ascending: false });
+      if (taxes && taxes.length > 0) {
+        setHistorico(taxes.map((t: any) => ({
+          mes: `${MESES[t.reference_month - 1]}/${t.reference_year}`,
+          valor: Number(t.das_amount),
+          status: t.status,
+          venc: t.due_date ? new Date(t.due_date).toLocaleDateString("pt-BR") : "—",
+          codigo: t.notes || "",
+        })));
+        setIsMock(false);
+        const acc = taxes.reduce((s: number, t: any) => s + Number(t.revenue || 0), 0);
+        if (acc > 0) setRevenue12m(acc);
+      }
+    };
+    load();
+  }, [user]);
+
+  const limite = { label: "Receita acumulada (12 meses)", valor: revenue12m, max: 81000 };
   const pctLimite = (limite.valor / limite.max) * 100;
 
   return (
@@ -40,6 +68,7 @@ const Impostos = () => {
         </Button>
       }
     >
+      <div className="mb-4"><MockBadge show={isMock} /></div>
       {/* Alerta de vencimento */}
       <Card className="p-5 shadow-coral mb-6 bg-warning-soft border-warning/30 relative overflow-hidden">
         <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-warning/20 blur-2xl animate-blob" />
