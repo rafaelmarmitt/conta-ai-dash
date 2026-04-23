@@ -20,6 +20,9 @@ import { BusinessWidgets } from "@/components/BusinessWidgets";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MockBadge } from "@/components/MockBadge";
+import { InfoTooltip } from "@/components/InfoTooltip";
+import { EmptyState } from "@/components/EmptyState";
+import mascot from "@/assets/mascot.png";
 
 const fluxoCaixa = [
   { mes: "Jan", entradas: 4200, saidas: 2100 },
