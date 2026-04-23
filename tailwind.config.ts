@@ -53,11 +53,24 @@ export default {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
           soft: "hsl(var(--success-soft))",
+          deep: "hsl(var(--success-deep))",
         },
         warning: {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
           soft: "hsl(var(--warning-soft))",
+        },
+        whatsapp: {
+          DEFAULT: "hsl(var(--whatsapp))",
+          soft: "hsl(var(--whatsapp-soft))",
+        },
+        coral: {
+          DEFAULT: "hsl(var(--coral))",
+          soft: "hsl(var(--coral-soft))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          soft: "hsl(var(--info-soft))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
