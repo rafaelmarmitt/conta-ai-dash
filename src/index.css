@@ -8,51 +8,67 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Conta.AI Design System — verde água + verde limão */
+    --background: 60 30% 98%;
+    --foreground: 180 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 180 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 180 25% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Teal vibrante (corpo da calculadora) */
+    --primary: 172 66% 42%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 172 70% 55%;
+    --primary-soft: 172 50% 92%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Verde limão para sucesso/destaques */
+    --success: 80 70% 55%;
+    --success-foreground: 180 30% 15%;
+    --success-soft: 80 70% 92%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --secondary: 172 30% 94%;
+    --secondary-foreground: 180 25% 18%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --muted: 180 15% 96%;
+    --muted-foreground: 180 10% 42%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 80 70% 92%;
+    --accent-foreground: 180 30% 15%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 100%;
+    --warning-soft: 38 95% 94%;
 
-    --radius: 0.5rem;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --sidebar-background: 0 0% 98%;
+    --border: 180 15% 90%;
+    --input: 180 15% 90%;
+    --ring: 172 66% 42%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --radius: 1rem;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --gradient-primary: linear-gradient(135deg, hsl(172 66% 42%), hsl(172 70% 55%));
+    --gradient-success: linear-gradient(135deg, hsl(80 70% 55%), hsl(95 70% 50%));
+    --gradient-soft: linear-gradient(180deg, hsl(172 50% 96%), hsl(60 30% 98%));
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    --shadow-soft: 0 2px 10px -2px hsl(172 40% 30% / 0.08);
+    --shadow-card: 0 4px 20px -6px hsl(172 40% 30% / 0.12);
+    --shadow-glow: 0 8px 32px -8px hsl(172 66% 42% / 0.35);
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 180 20% 25%;
+    --sidebar-primary: 172 66% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 172 50% 95%;
+    --sidebar-accent-foreground: 172 66% 30%;
+    --sidebar-border: 180 15% 92%;
+    --sidebar-ring: 172 66% 42%;
   }
 
   .dark {
@@ -100,6 +116,43 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
   }
 }
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  .gradient-success {
+    background: var(--gradient-success);
+  }
+  .gradient-soft {
+    background: var(--gradient-soft);
+  }
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  75% { transform: rotate(-10deg); }
+}
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-wave { animation: wave 2s ease-in-out infinite; transform-origin: 70% 70%; }
