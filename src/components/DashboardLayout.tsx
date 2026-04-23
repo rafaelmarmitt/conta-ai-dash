@@ -17,6 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { BUSINESS_CONFIGS } from "@/lib/businessTypes";
+import { HelpFab } from "@/components/HelpFab";
+import { WelcomeTour } from "@/components/WelcomeTour";
 
 interface Props {
   title: string;
@@ -125,6 +127,8 @@ export function DashboardLayout({ title, subtitle, actions, children }: Props) {
             {children}
           </main>
         </div>
+        <HelpFab />
+        <WelcomeTour />
       </div>
     </SidebarProvider>
   );

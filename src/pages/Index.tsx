@@ -20,6 +20,9 @@ import { BusinessWidgets } from "@/components/BusinessWidgets";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MockBadge } from "@/components/MockBadge";
+import { InfoTooltip } from "@/components/InfoTooltip";
+import { EmptyState } from "@/components/EmptyState";
+import mascot from "@/assets/mascot.png";
 
 const fluxoCaixa = [
   { mes: "Jan", entradas: 4200, saidas: 2100 },
@@ -187,9 +190,36 @@ const Index = () => {
         </>
       }
     >
-      <div className="mb-4"><MockBadge show={isMock} /></div>
+      {/* Hero de boas-vindas + status */}
+      <section
+        aria-labelledby="welcome-heading"
+        className="mb-6 p-5 sm:p-6 rounded-2xl border border-primary/20 gradient-mesh relative overflow-hidden"
+      >
+        <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
+        <div className="relative flex items-start gap-4">
+          <img src={mascot} alt="" className="h-12 w-12 sm:h-14 sm:w-14 shrink-0 animate-float drop-shadow-md" />
+          <div className="min-w-0 flex-1">
+            <h2 id="welcome-heading" className="text-base sm:text-lg font-extrabold text-foreground">
+              Bem-vindo ao Conta.AI.
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Seu negócio gerido pelo WhatsApp, visualizado aqui.
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <MockBadge show={isMock} />
+              {!isMock && (
+                <Badge className="bg-success-soft text-success-deep border-0 text-[10px]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse mr-1.5" />
+                  dados em tempo real
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* KPIs adaptativos */}
-      <div className="grid gap-4 md:gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+      <section aria-label="Indicadores principais" className="grid gap-4 md:gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         {config.metrics.map((m, idx) => {
           const tones: Array<"primary" | "success" | "destructive" | "warning"> = ["primary", "success", "destructive", "warning"];
           const tone = tones[idx % 4];
@@ -206,7 +236,7 @@ const Index = () => {
             />
           );
         })}
-      </div>
+      </section>
 
       {/* Widgets específicos do tipo de negócio */}
       <BusinessWidgets type={businessKey} />
@@ -221,6 +251,10 @@ const Index = () => {
                 <div className="flex items-center gap-2 mb-1">
                   <Target className="h-4 w-4 text-primary" />
                   <p className="text-xs font-bold uppercase tracking-wider text-primary">Meta de Junho</p>
+                  <InfoTooltip
+                    label="Meta mensal"
+                    content="Sua meta de faturamento bruto do mês. Ajuste em Perfil → Meta mensal."
+                  />
                 </div>
                 <p className="text-3xl md:text-4xl font-extrabold text-foreground">
                   {formatBRL(atualMensal)} <span className="text-lg font-medium text-muted-foreground">/ {formatBRL(metaMensal)}</span>

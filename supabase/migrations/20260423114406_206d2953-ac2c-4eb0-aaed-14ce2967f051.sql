@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS welcome_tour_completed BOOLEAN NOT NULL DEFAULT false;

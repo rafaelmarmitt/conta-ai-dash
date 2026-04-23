@@ -254,6 +254,7 @@ export type Database = {
           phone: string | null
           updated_at: string
           user_id: string
+          welcome_tour_completed: boolean
         }
         Insert: {
           business_name?: string | null
@@ -267,6 +268,7 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id: string
+          welcome_tour_completed?: boolean
         }
         Update: {
           business_name?: string | null
@@ -280,6 +282,7 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+          welcome_tour_completed?: boolean
         }
         Relationships: []
       }
