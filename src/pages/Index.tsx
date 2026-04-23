@@ -251,6 +251,10 @@ const Index = () => {
                 <div className="flex items-center gap-2 mb-1">
                   <Target className="h-4 w-4 text-primary" />
                   <p className="text-xs font-bold uppercase tracking-wider text-primary">Meta de Junho</p>
+                  <InfoTooltip
+                    label="Meta mensal"
+                    content="Sua meta de faturamento bruto do mês. Ajuste em Perfil → Meta mensal."
+                  />
                 </div>
                 <p className="text-3xl md:text-4xl font-extrabold text-foreground">
                   {formatBRL(atualMensal)} <span className="text-lg font-medium text-muted-foreground">/ {formatBRL(metaMensal)}</span>
