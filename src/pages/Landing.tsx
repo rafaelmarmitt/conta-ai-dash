@@ -1,5 +1,6 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, useReducedMotion } from "framer-motion";
 import {
   MessageCircle, BarChart3, Receipt, FileText, Bell,
   ShieldCheck, Smartphone, Sparkles, ArrowRight, Check,
@@ -21,8 +22,31 @@ const fade = {
 };
 
 const Landing = () => {
+  const prefersReducedMotion = useReducedMotion();
+
+  // Barra de progresso global do scroll
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 24, mass: 0.4 });
+
+  // Parallax no hero (mockup + blobs)
+  const heroRef = useRef<HTMLElement | null>(null);
+  const { scrollYProgress: heroProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const heroY = useTransform(heroProgress, [0, 1], [0, prefersReducedMotion ? 0 : -120]);
+  const heroOpacity = useTransform(heroProgress, [0, 0.85], [1, 0.25]);
+  const blobY1 = useTransform(heroProgress, [0, 1], [0, prefersReducedMotion ? 0 : 180]);
+  const blobY2 = useTransform(heroProgress, [0, 1], [0, prefersReducedMotion ? 0 : -140]);
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans antialiased overflow-x-hidden">
+      {/* Barra de progresso de scroll */}
+      <motion.div
+        style={{ scaleX }}
+        className="fixed top-0 left-0 right-0 h-1 origin-left z-[60] gradient-primary"
+        aria-hidden
+      />
       {/* NAV */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/60">
         <nav className="container mx-auto flex items-center justify-between px-4 md:px-6 py-3">
@@ -50,12 +74,12 @@ const Landing = () => {
       </header>
 
       {/* HERO */}
-      <section className="relative overflow-hidden">
+      <section ref={heroRef} className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 gradient-mesh opacity-80" />
-        <div className="absolute -top-40 -right-32 h-96 w-96 rounded-full bg-success/20 blur-3xl" />
-        <div className="absolute top-40 -left-32 h-96 w-96 rounded-full bg-primary/20 blur-3xl" />
+        <motion.div style={{ y: blobY1 }} className="absolute -top-40 -right-32 h-96 w-96 rounded-full bg-success/20 blur-3xl will-change-transform" />
+        <motion.div style={{ y: blobY2 }} className="absolute top-40 -left-32 h-96 w-96 rounded-full bg-primary/20 blur-3xl will-change-transform" />
 
-        <div className="container mx-auto px-4 md:px-6 pt-12 md:pt-20 pb-16 md:pb-24">
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-4 md:px-6 pt-12 md:pt-20 pb-16 md:pb-24">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             <motion.div initial="hidden" animate="show" variants={fade}>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-soft text-primary text-xs font-bold mb-5">
@@ -114,7 +138,7 @@ const Landing = () => {
               </motion.div>
             </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* COMO FUNCIONA */}
