@@ -646,14 +646,15 @@ export default function Onboarding() {
 
           {/* Footer nav */}
           {step < 5 && (
-            <div className="flex items-center justify-between mt-8 pt-6 border-t">
+            <div className="flex items-center justify-between gap-2 mt-8 pt-6 border-t">
               <Button
                 variant="ghost"
                 onClick={prev}
                 disabled={step === 1 || loading}
-                className="rounded-xl"
+                className="rounded-xl shrink-0"
               >
-                <ArrowLeft className="h-4 w-4" /> Voltar
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Voltar</span>
               </Button>
               {step < 4 ? (
                 <Button variant="hero" onClick={next} className="rounded-xl">
@@ -664,13 +665,15 @@ export default function Onboarding() {
                   variant="success"
                   onClick={finish}
                   disabled={loading}
-                  className="rounded-xl"
+                  className="rounded-xl min-w-0"
                 >
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      Confirmar e criar painel <Check className="h-4 w-4" />
+                      <span className="hidden sm:inline">Confirmar e criar painel</span>
+                      <span className="sm:hidden">Confirmar</span>
+                      <Check className="h-4 w-4" />
                     </>
                   )}
                 </Button>
