@@ -326,16 +326,17 @@ const Landing = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }} whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }} viewport={{ once: true, amount: 0.3 }}
-            className="relative gradient-hero rounded-[2.5rem] p-10 md:p-16 text-center text-primary-foreground overflow-hidden"
+            className="relative rounded-[2.5rem] p-10 md:p-16 text-center overflow-hidden shadow-glow"
+            style={{ background: "var(--gradient-hero)" }}
           >
-            <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-success/30 blur-3xl animate-blob" />
-            <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-primary-glow/30 blur-3xl animate-blob" />
-            <div className="relative">
-              <Wifi className="h-10 w-10 mx-auto mb-4 opacity-90" />
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight">
+            <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-success/20 blur-3xl animate-blob" />
+            <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-primary-glow/20 blur-3xl animate-blob" />
+            <div className="relative text-white">
+              <Wifi className="h-10 w-10 mx-auto mb-4 text-success" />
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight drop-shadow-md">
                 Pronto para gerenciar sua empresa pelo WhatsApp?
               </h2>
-              <p className="mt-4 text-base sm:text-lg text-primary-foreground/85 max-w-xl mx-auto">
+              <p className="mt-4 text-base sm:text-lg text-white/90 max-w-xl mx-auto">
                 Mais de 5.000 MEIs já simplificaram sua gestão. Junte-se a eles hoje.
               </p>
               <Button asChild size="lg" className="mt-8 rounded-full bg-success hover:bg-success/90 text-success-foreground font-extrabold text-base h-14 px-8 shadow-success transition-bounce hover:scale-[1.03]">
