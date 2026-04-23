@@ -74,12 +74,12 @@ const Landing = () => {
       </header>
 
       {/* HERO */}
-      <section className="relative overflow-hidden">
+      <section ref={heroRef} className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 gradient-mesh opacity-80" />
-        <div className="absolute -top-40 -right-32 h-96 w-96 rounded-full bg-success/20 blur-3xl" />
-        <div className="absolute top-40 -left-32 h-96 w-96 rounded-full bg-primary/20 blur-3xl" />
+        <motion.div style={{ y: blobY1 }} className="absolute -top-40 -right-32 h-96 w-96 rounded-full bg-success/20 blur-3xl will-change-transform" />
+        <motion.div style={{ y: blobY2 }} className="absolute top-40 -left-32 h-96 w-96 rounded-full bg-primary/20 blur-3xl will-change-transform" />
 
-        <div className="container mx-auto px-4 md:px-6 pt-12 md:pt-20 pb-16 md:pb-24">
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="container mx-auto px-4 md:px-6 pt-12 md:pt-20 pb-16 md:pb-24">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             <motion.div initial="hidden" animate="show" variants={fade}>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-soft text-primary text-xs font-bold mb-5">
