@@ -270,7 +270,10 @@ const Relatorios = () => {
       <Card className="p-5 shadow-card">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <div>
-            <h2 className="text-base font-bold">Transações</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold">Transações</h2>
+              <MockBadge show={isMock} />
+            </div>
             <p className="text-xs text-muted-foreground">{filtradas.length} registros</p>
           </div>
           <div className="relative w-full sm:w-72">
