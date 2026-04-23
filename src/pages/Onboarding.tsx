@@ -197,7 +197,7 @@ export default function Onboarding() {
   /* -------------------- Render -------------------- */
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 md:p-8 bg-background relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-3 sm:p-4 md:p-8 bg-background relative overflow-x-hidden">
       <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full gradient-primary opacity-20 blur-3xl animate-blob" />
       <div
         className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-success/40 blur-3xl animate-blob"
