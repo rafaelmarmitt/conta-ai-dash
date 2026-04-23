@@ -540,11 +540,11 @@ export default function Onboarding() {
                       <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                         Meta mensal
                       </p>
-                      <p className="text-2xl font-extrabold text-primary">
+                      <p className="text-xl sm:text-2xl font-extrabold text-primary truncate">
                         {formatBRL(Number(monthlyGoal))}
                       </p>
                     </div>
-                    <Badge className="gradient-success text-success-foreground border-0 hidden sm:inline-flex">
+                    <Badge className="gradient-success text-success-foreground border-0 hidden sm:inline-flex shrink-0">
                       🚀 Vamos lá!
                     </Badge>
                   </div>
