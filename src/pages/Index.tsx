@@ -122,15 +122,45 @@ const TOP_ITEMS_BY_TYPE: Record<string, Array<{ nome: string; vendas: number; to
 const formatBRL = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const Index = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const hora = new Date().getHours();
   const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
   const firstName = (profile?.full_name || "").split(" ")[0] || "MEI";
   const businessKey = profile?.business_type ?? "outros";
   const config = BUSINESS_CONFIGS[businessKey];
-  const values = METRIC_VALUES[businessKey];
+  const mockValues = METRIC_VALUES[businessKey];
   const atividades = ACTIVITIES_BY_TYPE[businessKey];
   const topProdutos = TOP_ITEMS_BY_TYPE[businessKey];
+
+  const [values, setValues] = useState(mockValues);
+  const [isMock, setIsMock] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+      const [{ data: sales }, { data: expenses }, { count: customersCount }] = await Promise.all([
+        supabase.from("sales").select("total").eq("user_id", user.id).gte("sold_at", monthStart.toISOString()),
+        supabase.from("expenses").select("amount").eq("user_id", user.id).gte("expense_date", monthStart.toISOString().slice(0, 10)),
+        supabase.from("customers").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+      ]);
+      const hasReal = (sales && sales.length > 0) || (expenses && expenses.length > 0) || (customersCount ?? 0) > 0;
+      if (!hasReal) { setValues(mockValues); setIsMock(true); return; }
+      const fat = (sales || []).reduce((s, v: any) => s + Number(v.total || 0), 0);
+      const desp = (expenses || []).reduce((s, v: any) => s + Number(v.amount || 0), 0);
+      const ticket = sales && sales.length ? fat / sales.length : 0;
+      setValues({
+        ...mockValues,
+        faturamento: fat,
+        despesas: desp,
+        lucro: fat - desp,
+        clientes: customersCount ?? 0,
+        ticket: Math.round(ticket),
+      });
+      setIsMock(false);
+    };
+    load();
+  }, [user, businessKey]);
 
   const metaMensal = profile?.monthly_goal && profile.monthly_goal > 0 ? Number(profile.monthly_goal) : 8000;
   const atualMensal = values.faturamento;
