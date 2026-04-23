@@ -17,6 +17,9 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { BUSINESS_CONFIGS } from "@/lib/businessTypes";
 import { BusinessWidgets } from "@/components/BusinessWidgets";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { MockBadge } from "@/components/MockBadge";
 
 const fluxoCaixa = [
   { mes: "Jan", entradas: 4200, saidas: 2100 },
