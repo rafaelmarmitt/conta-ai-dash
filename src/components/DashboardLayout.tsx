@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import mascot from "@/assets/mascot.png";
-import { Bell, Search, HelpCircle } from "lucide-react";
+import { Bell, Search, HelpCircle, LogOut, User as UserIcon, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,6 +14,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
+import { BUSINESS_CONFIGS } from "@/lib/businessTypes";
 
 interface Props {
   title: string;
@@ -29,6 +32,12 @@ const notifications = [
 ];
 
 export function DashboardLayout({ title, subtitle, actions, children }: Props) {
+  const { profile, signOut } = useAuth();
+  const displayName = profile?.full_name || profile?.business_name || "Usuário";
+  const firstName = displayName.split(" ")[0];
+  const businessLabel = profile?.business_type ? BUSINESS_CONFIGS[profile.business_type].label : "MEI";
+  const initial = firstName.charAt(0).toUpperCase();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -73,20 +82,36 @@ export function DashboardLayout({ title, subtitle, actions, children }: Props) {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <div className="flex items-center gap-2 pl-2 ml-1 border-l border-border">
-                <img
-                  src={mascot}
-                  alt=""
-                  width={36}
-                  height={36}
-                  loading="lazy"
-                  className="h-9 w-9 object-contain animate-wave"
-                />
-                <div className="hidden lg:flex flex-col leading-tight">
-                  <span className="text-xs font-bold text-foreground">Maria Silva</span>
-                  <span className="text-[10px] text-muted-foreground">MEI · Plano Free</span>
-                </div>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 pl-2 ml-1 border-l border-border hover:bg-muted/50 rounded-r-xl py-1 pr-2 transition-smooth">
+                    <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-glow">
+                      {initial}
+                    </div>
+                    <div className="hidden lg:flex flex-col leading-tight items-start">
+                      <span className="text-xs font-bold text-foreground">{firstName}</span>
+                      <span className="text-[10px] text-muted-foreground">{businessLabel} · Free</span>
+                    </div>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="flex flex-col gap-0.5">
+                    <span className="text-sm">{displayName}</span>
+                    <span className="text-[10px] text-muted-foreground font-normal">{profile?.business_name || "Configure seu negócio"}</span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/perfil"><UserIcon className="h-4 w-4" /> Perfil do negócio</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/perfil"><Settings className="h-4 w-4" /> Configurações</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+                    <LogOut className="h-4 w-4" /> Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
           <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-hidden">

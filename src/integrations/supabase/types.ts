@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          business_name: string | null
+          business_type: Database["public"]["Enums"]["business_type"] | null
+          cnpj: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          monthly_goal: number | null
+          onboarding_completed: boolean
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_name?: string | null
+          business_type?: Database["public"]["Enums"]["business_type"] | null
+          cnpj?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          monthly_goal?: number | null
+          onboarding_completed?: boolean
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_name?: string | null
+          business_type?: Database["public"]["Enums"]["business_type"] | null
+          cnpj?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          monthly_goal?: number | null
+          onboarding_completed?: boolean
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +64,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      business_type:
+        | "comercio"
+        | "servicos"
+        | "alimentacao"
+        | "beleza"
+        | "outros"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +196,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      business_type: [
+        "comercio",
+        "servicos",
+        "alimentacao",
+        "beleza",
+        "outros",
+      ],
+    },
   },
 } as const
