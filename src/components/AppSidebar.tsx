@@ -21,7 +21,7 @@ import { BUSINESS_CONFIGS } from "@/lib/businessTypes";
 type ModuleKey = "inicio" | "whatsapp" | "impostos" | "relatorios" | "catalogo" | "agenda" | "estoque" | "cardapio" | "perfil";
 
 const ALL_ITEMS: Record<ModuleKey, { title: string; url: string; icon: typeof LayoutDashboard; badge?: string }> = {
-  inicio: { title: "Início", url: "/", icon: LayoutDashboard },
+  inicio: { title: "Início", url: "/dashboard", icon: LayoutDashboard },
   whatsapp: { title: "WhatsApp", url: "/whatsapp", icon: MessageCircle, badge: "Bot" },
   impostos: { title: "Impostos (DAS)", url: "/impostos", icon: Receipt, badge: "1" },
   relatorios: { title: "Relatórios", url: "/relatorios", icon: BarChart3 },

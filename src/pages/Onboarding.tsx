@@ -169,7 +169,7 @@ export default function Onboarding() {
       setStep(5);
       toast.success("🎉 Tudo pronto! Bem-vindo ao Conta.AI");
       // Auto-redirect after celebration
-      setTimeout(() => navigate("/", { replace: true }), 2200);
+      setTimeout(() => navigate("/dashboard", { replace: true }), 2200);
     } catch (err: any) {
       toast.error(err.message ?? "Erro ao salvar perfil");
     } finally {
