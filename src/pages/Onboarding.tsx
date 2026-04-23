@@ -553,8 +553,8 @@ export default function Onboarding() {
 
               {/* Dashboard preview */}
               <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <LayoutDashboard className="h-4 w-4 text-primary" />
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                  <LayoutDashboard className="h-4 w-4 text-primary shrink-0" />
                   <p className="text-sm font-bold">Prévia do seu dashboard</p>
                   <Badge variant="secondary" className="text-[10px]">
                     personalizado
