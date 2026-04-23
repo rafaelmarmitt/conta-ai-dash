@@ -129,7 +129,7 @@ export const BUSINESS_CONFIGS: Record<BusinessType, BusinessConfig> = {
 export const BUSINESS_LIST: BusinessConfig[] = Object.values(BUSINESS_CONFIGS);
 
 export const MODULE_META: Record<string, { title: string; url: string; icon: LucideIcon; badge?: string }> = {
-  inicio: { title: "Início", url: "/", icon: TrendingUp },
+  inicio: { title: "Início", url: "/dashboard", icon: TrendingUp },
   whatsapp: { title: "WhatsApp", url: "/whatsapp", icon: Package, badge: "Bot" },
   impostos: { title: "Impostos (DAS)", url: "/impostos", icon: Receipt, badge: "1" },
   relatorios: { title: "Relatórios", url: "/relatorios", icon: TrendingUp },

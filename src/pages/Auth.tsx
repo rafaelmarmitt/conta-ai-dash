@@ -26,7 +26,7 @@ export default function Auth() {
   useEffect(() => {
     if (!authLoading && user) {
       if (profile && !profile.onboarding_completed) navigate("/onboarding", { replace: true });
-      else navigate("/", { replace: true });
+      else navigate("/dashboard", { replace: true });
     }
   }, [user, profile, authLoading, navigate]);
 
@@ -38,7 +38,7 @@ export default function Auth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: { full_name: fullName },
         },
       });
