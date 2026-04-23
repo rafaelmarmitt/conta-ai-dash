@@ -8,67 +8,90 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Conta.AI Design System — verde água + verde limão */
-    --background: 60 30% 98%;
-    --foreground: 180 25% 12%;
+    /* Conta.AI — paleta vibrante teal + lime + acentos quentes */
+    --background: 160 25% 97%;
+    --foreground: 180 35% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 180 25% 12%;
+    --card-foreground: 180 35% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 180 25% 12%;
+    --popover-foreground: 180 35% 10%;
 
-    /* Teal vibrante (corpo da calculadora) */
-    --primary: 172 66% 42%;
+    /* Teal vibrante - cor principal da marca */
+    --primary: 172 85% 38%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 172 70% 55%;
-    --primary-soft: 172 50% 92%;
+    --primary-glow: 168 90% 52%;
+    --primary-soft: 172 70% 94%;
+    --primary-deep: 178 80% 24%;
 
-    /* Verde limão para sucesso/destaques */
-    --success: 80 70% 55%;
-    --success-foreground: 180 30% 15%;
-    --success-soft: 80 70% 92%;
+    /* Verde limão elétrico - sucesso e ações principais */
+    --success: 88 85% 52%;
+    --success-foreground: 180 60% 12%;
+    --success-soft: 88 80% 92%;
+    --success-deep: 95 80% 32%;
 
-    --secondary: 172 30% 94%;
-    --secondary-foreground: 180 25% 18%;
+    /* WhatsApp brand */
+    --whatsapp: 142 70% 45%;
+    --whatsapp-soft: 142 70% 92%;
 
-    --muted: 180 15% 96%;
-    --muted-foreground: 180 10% 42%;
+    /* Coral vibrante - destaques quentes */
+    --coral: 14 92% 62%;
+    --coral-soft: 14 95% 94%;
 
-    --accent: 80 70% 92%;
-    --accent-foreground: 180 30% 15%;
+    /* Roxo elétrico - dados e analytics */
+    --info: 252 85% 65%;
+    --info-soft: 252 90% 95%;
 
-    --warning: 38 92% 55%;
-    --warning-foreground: 0 0% 100%;
-    --warning-soft: 38 95% 94%;
+    --secondary: 172 40% 93%;
+    --secondary-foreground: 180 35% 18%;
 
-    --destructive: 0 75% 55%;
+    --muted: 175 20% 95%;
+    --muted-foreground: 180 12% 38%;
+
+    --accent: 88 80% 92%;
+    --accent-foreground: 180 35% 15%;
+
+    --warning: 38 95% 58%;
+    --warning-foreground: 30 80% 15%;
+    --warning-soft: 42 100% 92%;
+
+    --destructive: 0 82% 58%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-soft: 0 90% 95%;
 
-    --border: 180 15% 90%;
-    --input: 180 15% 90%;
-    --ring: 172 66% 42%;
+    --border: 175 20% 88%;
+    --input: 175 20% 90%;
+    --ring: 172 85% 38%;
 
     --radius: 1rem;
 
-    --gradient-primary: linear-gradient(135deg, hsl(172 66% 42%), hsl(172 70% 55%));
-    --gradient-success: linear-gradient(135deg, hsl(80 70% 55%), hsl(95 70% 50%));
-    --gradient-soft: linear-gradient(180deg, hsl(172 50% 96%), hsl(60 30% 98%));
+    --gradient-primary: linear-gradient(135deg, hsl(172 85% 38%) 0%, hsl(168 90% 52%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(88 85% 52%) 0%, hsl(142 70% 45%) 100%);
+    --gradient-coral: linear-gradient(135deg, hsl(14 92% 62%) 0%, hsl(38 95% 58%) 100%);
+    --gradient-info: linear-gradient(135deg, hsl(252 85% 65%) 0%, hsl(280 80% 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(178 80% 24%) 0%, hsl(172 85% 38%) 50%, hsl(168 90% 52%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(172 60% 96%) 0%, hsl(160 25% 97%) 100%);
+    --gradient-mesh: radial-gradient(at 20% 0%, hsl(172 85% 38% / 0.15) 0px, transparent 50%),
+                     radial-gradient(at 80% 100%, hsl(88 85% 52% / 0.18) 0px, transparent 50%);
 
-    --shadow-soft: 0 2px 10px -2px hsl(172 40% 30% / 0.08);
-    --shadow-card: 0 4px 20px -6px hsl(172 40% 30% / 0.12);
-    --shadow-glow: 0 8px 32px -8px hsl(172 66% 42% / 0.35);
+    --shadow-soft: 0 2px 12px -2px hsl(172 50% 25% / 0.08);
+    --shadow-card: 0 6px 24px -8px hsl(172 50% 25% / 0.14);
+    --shadow-glow: 0 12px 40px -12px hsl(172 85% 38% / 0.45);
+    --shadow-success: 0 12px 40px -12px hsl(88 85% 52% / 0.5);
+    --shadow-coral: 0 12px 40px -12px hsl(14 92% 62% / 0.4);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 180 20% 25%;
-    --sidebar-primary: 172 66% 42%;
+    --sidebar-foreground: 180 25% 22%;
+    --sidebar-primary: 172 85% 38%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 172 50% 95%;
-    --sidebar-accent-foreground: 172 66% 30%;
-    --sidebar-border: 180 15% 92%;
-    --sidebar-ring: 172 66% 42%;
+    --sidebar-accent: 172 70% 94%;
+    --sidebar-accent-foreground: 178 80% 24%;
+    --sidebar-border: 175 20% 90%;
+    --sidebar-ring: 172 85% 38%;
   }
 
   .dark {
