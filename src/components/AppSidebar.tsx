@@ -68,13 +68,10 @@ export function AppSidebar() {
           )}
         </div>
       </SidebarHeader>
-      <SidebarContent className="px-2">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">
-            Menu principal
-          </SidebarGroupLabel>
+      <SidebarContent className="px-2 overflow-hidden">
+        <SidebarGroup className="py-1">
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-0.5">
               {items.map((item) => {
                 const active = location.pathname === item.url;
                 return (
@@ -82,16 +79,16 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       isActive={active}
-                      className="h-11 rounded-xl font-medium transition-bounce data-[active=true]:gradient-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-glow"
+                      className="h-9 rounded-xl font-medium transition-bounce data-[active=true]:gradient-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-glow"
                     >
                       <NavLink to={item.url} end>
                         <item.icon className="h-4 w-4" />
                         {!collapsed && (
                           <>
-                            <span className="flex-1">{item.title}</span>
+                            <span className="flex-1 text-sm">{item.title}</span>
                             {item.badge && (
                               <Badge
-                                className={`h-5 text-[10px] px-1.5 border-0 ${
+                                className={`h-4 text-[10px] px-1.5 border-0 ${
                                   active ? "bg-white/25 text-white" : "bg-coral text-primary-foreground"
                                 }`}
                               >
@@ -109,23 +106,17 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-3 space-y-2">
+      <SidebarFooter className="p-2 gap-1">
         {!collapsed && (
-          <div className="rounded-2xl gradient-hero p-4 text-primary-foreground relative overflow-hidden">
-            <div className="absolute -top-6 -right-6 h-20 w-20 rounded-full bg-success/40 blur-2xl animate-blob" />
-            <div className="relative">
-              <Sparkles className="h-5 w-5 mb-2" />
-              <p className="text-sm font-bold leading-tight">Upgrade Pro</p>
-              <p className="text-xs text-primary-foreground/80 mt-0.5 mb-3">Relatórios IA + N8N ilimitado</p>
-              <button className="text-[11px] font-bold bg-white text-primary-deep px-3 py-1.5 rounded-lg hover:bg-success hover:text-success-foreground transition-bounce">
-                Saiba mais →
-              </button>
-            </div>
-          </div>
+          <button className="w-full flex items-center gap-2 px-3 py-2 rounded-xl gradient-hero text-primary-foreground text-xs font-bold hover:opacity-95 transition-bounce shadow-soft">
+            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+            <span className="flex-1 text-left">Upgrade Pro</span>
+            <span className="text-[11px] opacity-90">→</span>
+          </button>
         )}
         <button
           onClick={signOut}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive-soft transition-bounce"
+          className="w-full flex items-center gap-3 px-3 py-1.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive-soft transition-bounce"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           {!collapsed && <span>Sair</span>}
