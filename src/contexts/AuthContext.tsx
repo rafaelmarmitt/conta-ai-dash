@@ -13,6 +13,7 @@ export interface Profile {
   business_type: BusinessType | null;
   monthly_goal: number | null;
   onboarding_completed: boolean;
+  welcome_tour_completed: boolean;
 }
 
 interface AuthContextValue {
