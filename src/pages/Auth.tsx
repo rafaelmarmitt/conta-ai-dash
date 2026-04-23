@@ -141,9 +141,9 @@ export default function Auth() {
               <TabsContent value="signup" className="space-y-4 mt-0">
                 <div className="space-y-1">
                   <h2 className="text-2xl font-extrabold flex items-center gap-2">
-                    Comece grátis <Sparkles className="h-5 w-5 text-warning" />
+                    Comece agora <Sparkles className="h-5 w-5 text-warning" />
                   </h2>
-                  <p className="text-sm text-muted-foreground">Sem cartão de crédito. 30 segundos.</p>
+                  <p className="text-sm text-muted-foreground">Leva apenas 30 segundos.</p>
                 </div>
 
                 <form onSubmit={handleSignUp} className="space-y-4">
