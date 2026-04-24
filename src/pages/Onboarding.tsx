@@ -89,6 +89,25 @@ export default function Onboarding() {
     [businessType]
   );
 
+  // Validação reativa para habilitar/desabilitar botão "Próximo"
+  const stepValid = useMemo(() => {
+    if (step === 1) return !!businessType;
+    if (step === 2) {
+      return businessInfoSchema.safeParse({ businessName, cnpj, phone }).success;
+    }
+    if (step === 3) {
+      return goalSchema.safeParse({ monthlyGoal: Number(monthlyGoal) }).success;
+    }
+    return true;
+  }, [step, businessType, businessName, cnpj, phone, monthlyGoal]);
+
+  // Foco automático no primeiro campo de cada passo
+  const firstFieldRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    const t = setTimeout(() => firstFieldRef.current?.focus(), 100);
+    return () => clearTimeout(t);
+  }, [step]);
+
   /* -------------------- Validation per step -------------------- */
 
   const validateStep = (): boolean => {
