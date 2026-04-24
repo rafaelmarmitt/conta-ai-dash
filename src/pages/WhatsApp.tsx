@@ -133,40 +133,8 @@ const WhatsAppPage = () => {
                 </Button>
               </div>
             </Card>
-
-            <div className="space-y-5">
-              <Card className="p-6 shadow-card text-center">
-                <h3 className="text-sm font-bold mb-3">Conectar novo dispositivo</h3>
-                <div className="aspect-square w-full max-w-[200px] mx-auto rounded-2xl bg-gradient-to-br from-primary-soft to-success-soft flex items-center justify-center mb-3 relative overflow-hidden">
-                  <QrCode className="h-32 w-32 text-primary-deep" strokeWidth={1.2} />
-                  <div className="absolute inset-0 animate-shimmer" />
-                </div>
-                <p className="text-xs text-muted-foreground mb-3">Escaneie no WhatsApp Web</p>
-                <Button variant="outline" size="sm" className="w-full" onClick={() => toast("QR Code regenerado!")}>
-                  <RefreshCw className="h-3.5 w-3.5" /> Novo QR
-                </Button>
-              </Card>
-
-              <Card className="p-5 shadow-card">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Wifi className="h-4 w-4 text-success" />
-                    <h3 className="text-sm font-bold">N8N Workflow</h3>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="text-xs text-muted-foreground space-y-1.5 mb-3">
-                  <p className="flex justify-between"><span>Endpoint:</span> <code className="text-foreground">/webhook/conta-ai</code></p>
-                  <p className="flex justify-between"><span>Versão:</span> <span className="text-foreground font-semibold">v2.1.4</span></p>
-                  <p className="flex justify-between"><span>Uptime:</span> <span className="text-success-deep font-semibold">99.9%</span></p>
-                </div>
-                <Button variant="outline" size="sm" className="w-full">
-                  <Power className="h-3.5 w-3.5" /> Reiniciar workflow
-                </Button>
-              </Card>
-            </div>
-
-            <Card className="p-5 shadow-card lg:col-span-3">
+          </div>
+        </TabsContent>
               <h3 className="text-sm font-bold mb-1">Atividade nas últimas 24h</h3>
               <p className="text-xs text-muted-foreground mb-4">Mensagens processadas pelo bot</p>
               <div className="h-56 w-full">
