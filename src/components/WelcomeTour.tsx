@@ -246,10 +246,23 @@ export function WelcomeTour() {
                     WhatsApp quando fizeres o pagamento ou atualizares aqui no painel —
                     nós cuidamos do resto.
                   </p>
-                  <Button size="sm" variant="outline" className="rounded-lg mt-2" asChild>
-                    <Link to="/impostos" onClick={() => setOpen(false)}>
-                      <Receipt className="h-3.5 w-3.5" /> Ver impostos
-                    </Link>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-lg mt-2"
+                    onClick={() => completeTourAndGo("/impostos", "impostos")}
+                    disabled={navigating !== null || saving}
+                    aria-label="Ir para a página de impostos"
+                  >
+                    {navigating === "impostos" ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Abrindo…
+                      </>
+                    ) : (
+                      <>
+                        <Receipt className="h-3.5 w-3.5" /> Ver impostos
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
