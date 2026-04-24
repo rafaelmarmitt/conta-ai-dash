@@ -49,14 +49,26 @@ const Impostos = () => {
     }
   }, [rows]);
 
+  // Data de cadastro do usuário (auth) — só mostramos DAS a partir desse mês
+  const signupDate = useMemo(() => {
+    return user?.created_at ? new Date(user.created_at) : null;
+  }, [user]);
+
   const months = useMemo(() => {
     return MESES_PT.map((nome, idx) => {
       const monthRef = buildMonthRef(idx, year);
       const row = byMonth.get(monthRef);
       const status = row ? computeStatus(row) : "pendente";
       return { idx, nome, monthRef, row, status };
+    }).filter(({ idx }) => {
+      if (!signupDate) return true;
+      const signupYear = signupDate.getFullYear();
+      const signupMonth = signupDate.getMonth();
+      if (year < signupYear) return false;
+      if (year > signupYear) return true;
+      return idx >= signupMonth;
     });
-  }, [byMonth, year]);
+  }, [byMonth, year, signupDate]);
 
   const stats = useMemo(() => {
     const pagos = months.filter((m) => m.status === "pago").length;
@@ -241,7 +253,9 @@ const Impostos = () => {
             </div>
             <div>
               <h2 className="text-base font-bold">DAS de {year}</h2>
-              <p className="text-xs text-muted-foreground">12 obrigações mensais — vencimento todo dia 20</p>
+              <p className="text-xs text-muted-foreground">
+                {months.length} {months.length === 1 ? "obrigação mensal" : "obrigações mensais"} — vencimento todo dia 20
+              </p>
             </div>
           </div>
 
@@ -250,6 +264,10 @@ const Impostos = () => {
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="h-16 rounded-xl bg-muted/40 animate-pulse" />
               ))}
+            </div>
+          ) : months.length === 0 ? (
+            <div className="p-8 text-center text-sm text-muted-foreground rounded-xl bg-muted/30 border border-dashed">
+              Você não tinha conta no Conta.AI em {year}. Selecione um ano a partir do seu cadastro para ver as obrigações.
             </div>
           ) : (
             <div className="space-y-2">
