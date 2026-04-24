@@ -19,6 +19,9 @@ import { Link } from "react-router-dom";
 import { BUSINESS_CONFIGS } from "@/lib/businessTypes";
 import { HelpFab } from "@/components/HelpFab";
 import { WelcomeTour } from "@/components/WelcomeTour";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTheme } from "next-themes";
+import { Moon, Sun, Monitor } from "lucide-react";
 
 interface Props {
   title: string;
@@ -32,6 +35,34 @@ const notifications = [
   { title: "DAS vence em 12 dias", desc: "R$ 75,90 pendente", time: "1 h" },
   { title: "Bot conectado", desc: "WhatsApp online", time: "3 h" },
 ];
+
+function ThemeMenuItems() {
+  const { theme, setTheme } = useTheme();
+  const opts = [
+    { value: "light", label: "Claro", icon: Sun },
+    { value: "dark", label: "Escuro", icon: Moon },
+    { value: "system", label: "Sistema", icon: Monitor },
+  ] as const;
+  return (
+    <>
+      {opts.map((o) => {
+        const Icon = o.icon;
+        const active = theme === o.value;
+        return (
+          <DropdownMenuItem
+            key={o.value}
+            onSelect={(e) => { e.preventDefault(); setTheme(o.value); }}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <Icon className="h-4 w-4" />
+            <span className="flex-1">{o.label}</span>
+            {active && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+          </DropdownMenuItem>
+        );
+      })}
+    </>
+  );
+}
 
 export function DashboardLayout({ title, subtitle, actions, children }: Props) {
   const { profile, signOut } = useAuth();
@@ -60,6 +91,7 @@ export function DashboardLayout({ title, subtitle, actions, children }: Props) {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
+              <ThemeToggle className="hidden sm:inline-flex" />
               <Button variant="ghost" size="icon" aria-label="Ajuda" className="hidden sm:inline-flex">
                 <HelpCircle className="h-5 w-5" />
               </Button>
@@ -116,6 +148,9 @@ export function DashboardLayout({ title, subtitle, actions, children }: Props) {
                   <DropdownMenuItem asChild>
                     <Link to="/perfil?tab=config"><Settings className="h-4 w-4" /> Configurações</Link>
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Aparência</DropdownMenuLabel>
+                  <ThemeMenuItems />
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
                     <LogOut className="h-4 w-4" /> Sair

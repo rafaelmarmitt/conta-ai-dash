@@ -11,12 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Building2, Target, Save, Trophy, Award, Sparkles, Bell,
-  CreditCard, Lock
+  CreditCard, Lock, Palette
 } from "lucide-react";
 import { toast } from "sonner";
 import { CopyButton } from "@/components/CopyButton";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { useAuth } from "@/contexts/AuthContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Perfil = () => {
   const { profile } = useAuth();
@@ -212,6 +213,18 @@ const Perfil = () => {
 
         <TabsContent value="config" className="mt-0">
           <div className="grid gap-5 lg:grid-cols-2">
+            <Card className="p-6 shadow-card lg:col-span-2">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-11 w-11 rounded-2xl bg-primary-soft flex items-center justify-center">
+                  <Palette className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold">Aparência</h2>
+                  <p className="text-xs text-muted-foreground">Escolha entre claro, escuro ou seguir o sistema</p>
+                </div>
+              </div>
+              <ThemeToggle variant="segmented" />
+            </Card>
             <Card className="p-6 shadow-card">
               <div className="flex items-center gap-3 mb-5">
                 <div className="h-11 w-11 rounded-2xl bg-info-soft flex items-center justify-center">
