@@ -14,6 +14,7 @@ export interface Profile {
   monthly_goal: number | null;
   onboarding_completed: boolean;
   welcome_tour_completed: boolean;
+  avatar_url: string | null;
 }
 
 interface AuthContextValue {
