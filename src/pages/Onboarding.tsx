@@ -250,18 +250,26 @@ export default function Onboarding() {
           <span className="text-xl font-extrabold text-gradient-primary">Conta.AI</span>
         </div>
 
-        {/* Stepper visual */}
-        <div className="hidden sm:flex items-center justify-center gap-2 mb-6">
+        {/* Stepper visual (clicável para passos já completados) */}
+        <nav aria-label="Progresso do onboarding" className="hidden sm:flex items-center justify-center gap-2 mb-6">
           {STEPS.map((s, idx) => {
             const done = step > s.id;
             const current = step === s.id;
+            const clickable = s.id < step && step < 5;
             const Icon = s.icon;
             return (
               <div key={s.id} className="flex items-center">
-                <div
+                <button
+                  type="button"
+                  onClick={() => clickable && goToStep(s.id)}
+                  disabled={!clickable}
+                  aria-current={current ? "step" : undefined}
+                  aria-label={`Passo ${s.id}: ${s.label}${done ? " (concluído)" : current ? " (atual)" : ""}`}
                   className={cn(
-                    "flex flex-col items-center gap-1.5 transition-bounce",
-                    current && "scale-110"
+                    "flex flex-col items-center gap-1.5 transition-bounce focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1",
+                    current && "scale-110",
+                    clickable && "hover:opacity-80 cursor-pointer",
+                    !clickable && "cursor-default"
                   )}
                 >
                   <div
@@ -282,7 +290,7 @@ export default function Onboarding() {
                   >
                     {s.label}
                   </span>
-                </div>
+                </button>
                 {idx < STEPS.length - 1 && (
                   <div
                     className={cn(
@@ -294,7 +302,7 @@ export default function Onboarding() {
               </div>
             );
           })}
-        </div>
+        </nav>
 
         <Card className="p-4 sm:p-6 md:p-10 rounded-2xl sm:rounded-3xl border-2 shadow-glow backdrop-blur-xl bg-card/95 overflow-hidden">
           {/* Mobile progress bar */}
