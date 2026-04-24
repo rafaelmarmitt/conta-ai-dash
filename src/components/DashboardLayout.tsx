@@ -87,9 +87,17 @@ export function DashboardLayout({ title, subtitle, actions, children }: Props) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 pl-2 ml-1 border-l border-border hover:bg-muted/50 rounded-r-xl py-1 pr-2 transition-smooth">
-                    <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-glow">
-                      {initial}
-                    </div>
+                    {profile?.avatar_url ? (
+                      <img
+                        src={profile.avatar_url}
+                        alt="Foto de perfil"
+                        className="h-9 w-9 rounded-full object-cover shadow-glow border border-border"
+                      />
+                    ) : (
+                      <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-glow">
+                        {initial}
+                      </div>
+                    )}
                     <div className="hidden lg:flex flex-col leading-tight items-start">
                       <span className="text-xs font-bold text-foreground">{firstName}</span>
                       <span className="text-[10px] text-muted-foreground">{businessLabel} · Free</span>
