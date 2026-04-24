@@ -488,6 +488,7 @@ export default function Onboarding() {
                   </span>
                   <Input
                     id="goal"
+                    ref={step === 3 ? firstFieldRef : undefined}
                     type="number"
                     inputMode="numeric"
                     value={monthlyGoal}
@@ -500,7 +501,8 @@ export default function Onboarding() {
                     max={81000}
                     className={cn(
                       "h-12 rounded-xl pl-10 text-lg font-bold",
-                      errors.monthlyGoal && "border-destructive"
+                      errors.monthlyGoal && "border-destructive",
+                      !errors.monthlyGoal && Number(monthlyGoal) >= 100 && "border-success/60"
                     )}
                     aria-invalid={!!errors.monthlyGoal}
                   />
@@ -509,6 +511,11 @@ export default function Onboarding() {
                   <p className="text-xs text-destructive flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" /> {errors.monthlyGoal}
                   </p>
+                ) : Number(monthlyGoal) >= 100 ? (
+                  <p className="text-xs text-success-deep flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Meta diária ≈ {formatBRL(Number(monthlyGoal) / 30)} · anual ≈ {formatBRL(Number(monthlyGoal) * 12)}
+                  </p>
                 ) : (
                   <p className="text-xs text-muted-foreground">
                     💡 Limite anual MEI 2025: R$ 81.000 (≈ R$ 6.750/mês).
@@ -516,25 +523,37 @@ export default function Onboarding() {
                 )}
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                {[3000, 5000, 6750].map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => {
-                      setMonthlyGoal(String(v));
-                      setErrors((p) => ({ ...p, monthlyGoal: "" }));
-                    }}
-                    className={cn(
-                      "py-2.5 px-1 rounded-xl border-2 text-xs sm:text-sm font-bold transition-bounce truncate",
-                      monthlyGoal === String(v)
-                        ? "border-primary bg-primary-soft text-primary"
-                        : "border-border hover:border-primary/40"
-                    )}
-                  >
-                    R$ {v.toLocaleString("pt-BR")}
-                  </button>
-                ))}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                  Sugestões rápidas
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { v: 3000, label: "Iniciante" },
+                    { v: 5000, label: "Crescendo" },
+                    { v: 6750, label: "Limite MEI" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.v}
+                      type="button"
+                      onClick={() => {
+                        setMonthlyGoal(String(opt.v));
+                        setErrors((p) => ({ ...p, monthlyGoal: "" }));
+                      }}
+                      className={cn(
+                        "py-2.5 px-1 rounded-xl border-2 text-xs sm:text-sm font-bold transition-bounce flex flex-col items-center gap-0.5",
+                        monthlyGoal === String(opt.v)
+                          ? "border-primary bg-primary-soft text-primary"
+                          : "border-border hover:border-primary/40"
+                      )}
+                    >
+                      <span className="truncate">R$ {opt.v.toLocaleString("pt-BR")}</span>
+                      <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                        {opt.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
