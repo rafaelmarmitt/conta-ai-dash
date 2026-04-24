@@ -163,53 +163,71 @@ const Impostos = () => {
       }
     >
       {/* Configuração do valor padrão + ano */}
-      <Card className="p-5 mb-6 shadow-card">
-        <div className="flex flex-wrap items-end gap-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="ano-select" className="text-xs uppercase tracking-wider text-muted-foreground">
-              Ano de referência
-            </Label>
-            <select
-              id="ano-select"
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-              className="h-10 rounded-xl border border-input bg-background px-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              {[now.getFullYear() + 1, now.getFullYear(), now.getFullYear() - 1, now.getFullYear() - 2].map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
+      <Card className="mb-6 shadow-card overflow-hidden border-0">
+        <div className="grid gap-0 md:grid-cols-[1fr_1fr_auto] divide-y md:divide-y-0 md:divide-x divide-border">
+          {/* Ano */}
+          <div className="p-5 flex items-center gap-4">
+            <div className="h-11 w-11 rounded-2xl bg-primary-soft flex items-center justify-center shrink-0">
+              <CalendarClock className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <Label htmlFor="ano-select" className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Ano de referência
+              </Label>
+              <select
+                id="ano-select"
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+                className="mt-1 h-9 w-full rounded-lg border border-input bg-background px-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+              >
+                {[now.getFullYear() + 1, now.getFullYear(), now.getFullYear() - 1, now.getFullYear() - 2].map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          <div className="space-y-1.5 flex-1 min-w-[200px] max-w-[280px]">
-            <Label htmlFor="default-das" className="text-xs uppercase tracking-wider text-muted-foreground">
-              Valor sugerido do DAS (R$)
-            </Label>
-            <Input
-              id="default-das"
-              inputMode="decimal"
-              value={String(defaultAmount).replace(".", ",")}
-              onChange={(e) => {
-                const v = Number(e.target.value.replace(",", "."));
-                if (!isNaN(v)) setDefaultAmount(v);
-              }}
-              className="h-10 rounded-xl"
-            />
-            <p className="text-[11px] text-muted-foreground">
-              Esse valor é usado quando você gera o registro de um mês novo.
-            </p>
+          {/* Valor sugerido */}
+          <div className="p-5 flex items-center gap-4">
+            <div className="h-11 w-11 rounded-2xl bg-success-soft flex items-center justify-center shrink-0">
+              <PiggyBank className="h-5 w-5 text-success-deep" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <Label htmlFor="default-das" className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Valor sugerido do DAS
+              </Label>
+              <div className="relative mt-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-semibold">R$</span>
+                <Input
+                  id="default-das"
+                  inputMode="decimal"
+                  value={String(defaultAmount).replace(".", ",")}
+                  onChange={(e) => {
+                    const v = Number(e.target.value.replace(",", "."));
+                    if (!isNaN(v)) setDefaultAmount(v);
+                  }}
+                  className="h-9 pl-9 rounded-lg font-bold"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="ml-auto flex flex-wrap gap-2">
-            <Badge className="bg-success-soft text-success-deep border-0 font-semibold">
-              <CheckCircle2 className="h-3 w-3 mr-1" /> {stats.pagos} pagos
-            </Badge>
-            <Badge className="bg-muted text-foreground border-0 font-semibold">
-              <Clock className="h-3 w-3 mr-1" /> {stats.pendentes} pendentes
-            </Badge>
-            <Badge className="bg-destructive/15 text-destructive border-0 font-semibold">
-              <XCircle className="h-3 w-3 mr-1" /> {stats.vencidos} vencidos
-            </Badge>
+          {/* Status badges */}
+          <div className="p-5 flex flex-col justify-center gap-2 md:min-w-[220px] bg-muted/30">
+            <Label className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+              Resumo de {year}
+            </Label>
+            <div className="flex flex-wrap gap-1.5">
+              <Badge className="bg-success-soft text-success-deep border-0 font-semibold">
+                <CheckCircle2 className="h-3 w-3 mr-1" /> {stats.pagos} pagos
+              </Badge>
+              <Badge className="bg-muted text-foreground border-0 font-semibold">
+                <Clock className="h-3 w-3 mr-1" /> {stats.pendentes} pendentes
+              </Badge>
+              <Badge className="bg-destructive/15 text-destructive border-0 font-semibold">
+                <XCircle className="h-3 w-3 mr-1" /> {stats.vencidos} vencidos
+              </Badge>
+            </div>
           </div>
         </div>
       </Card>
