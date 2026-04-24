@@ -19,10 +19,15 @@ import { AvatarUpload } from "@/components/AvatarUpload";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Perfil = () => {
+  const { profile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
   const validTabs = ["dados", "metas", "conquistas", "config"];
   const activeTab = validTabs.includes(tabParam || "") ? (tabParam as string) : "dados";
+
+  const displayName = profile?.full_name || profile?.business_name || "Usuário";
+  const businessName = profile?.business_name || "Configure seu negócio";
+  const initial = displayName.charAt(0).toUpperCase();
 
   const meta = 8000;
   const atual = 7300;
