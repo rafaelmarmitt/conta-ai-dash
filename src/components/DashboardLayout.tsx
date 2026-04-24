@@ -120,6 +120,9 @@ export function DashboardLayout({ title, subtitle, actions, children }: Props) {
                     <Link to="/perfil?tab=config"><Settings className="h-4 w-4" /> Configurações</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Aparência</DropdownMenuLabel>
+                  <ThemeMenuItems />
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
                     <LogOut className="h-4 w-4" /> Sair
                   </DropdownMenuItem>
