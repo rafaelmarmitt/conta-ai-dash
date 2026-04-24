@@ -37,7 +37,7 @@ export function StatCard({ label, value, hint, trend, icon: Icon, tone = "primar
           <p className={cn("text-xs font-semibold uppercase tracking-wider", accent ? "text-primary-foreground/80" : "text-muted-foreground")}>
             {label}
           </p>
-          <p className={cn("text-2xl md:text-3xl font-bold mt-2 truncate", accent ? "text-primary-foreground" : "text-foreground")}>
+          <p className={cn("text-xl sm:text-2xl lg:text-3xl font-bold mt-2 break-all leading-tight", accent ? "text-primary-foreground" : "text-foreground")}>
             {value}
           </p>
           <div className="flex items-center gap-2 mt-1.5">
