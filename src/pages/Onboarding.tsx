@@ -304,14 +304,17 @@ export default function Onboarding() {
           })}
         </nav>
 
-        <Card className="p-4 sm:p-6 md:p-10 rounded-2xl sm:rounded-3xl border-2 shadow-glow backdrop-blur-xl bg-card/95 overflow-hidden">
-          {/* Mobile progress bar */}
-          <div className="sm:hidden mb-6">
-            <div className="flex items-center justify-between text-xs font-bold text-muted-foreground mb-2">
+        <Card
+          onKeyDown={handleKeyDown}
+          className="p-4 sm:p-6 md:p-10 rounded-2xl sm:rounded-3xl border-2 shadow-glow backdrop-blur-xl bg-card/95 overflow-hidden"
+        >
+          {/* Progress bar (mobile + desktop slim) */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between text-xs font-bold text-muted-foreground mb-2 sm:hidden">
               <span>Passo {step} de {totalSteps}</span>
               <span className="text-primary">{Math.round(progress)}%</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-1.5 sm:h-1" />
           </div>
 
           {/* ============ STEP 1: Business type ============ */}
