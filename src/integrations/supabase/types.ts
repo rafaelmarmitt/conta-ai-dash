@@ -243,6 +243,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           business_name: string | null
           business_type: Database["public"]["Enums"]["business_type"] | null
           cnpj: string | null
@@ -257,6 +258,7 @@ export type Database = {
           welcome_tour_completed: boolean
         }
         Insert: {
+          avatar_url?: string | null
           business_name?: string | null
           business_type?: Database["public"]["Enums"]["business_type"] | null
           cnpj?: string | null
@@ -271,6 +273,7 @@ export type Database = {
           welcome_tour_completed?: boolean
         }
         Update: {
+          avatar_url?: string | null
           business_name?: string | null
           business_type?: Database["public"]["Enums"]["business_type"] | null
           cnpj?: string | null

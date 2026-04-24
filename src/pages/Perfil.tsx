@@ -11,16 +11,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Building2, Target, Save, Trophy, Award, Sparkles, Bell,
-  CreditCard, Lock, Camera
+  CreditCard, Lock
 } from "lucide-react";
 import { toast } from "sonner";
 import { CopyButton } from "@/components/CopyButton";
+import { AvatarUpload } from "@/components/AvatarUpload";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Perfil = () => {
+  const { profile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
   const validTabs = ["dados", "metas", "conquistas", "config"];
   const activeTab = validTabs.includes(tabParam || "") ? (tabParam as string) : "dados";
+
+  const displayName = profile?.full_name || profile?.business_name || "Usuário";
+  const businessName = profile?.business_name || "Configure seu negócio";
+  const initial = displayName.charAt(0).toUpperCase();
 
   const meta = 8000;
   const atual = 7300;
@@ -96,17 +103,9 @@ const Perfil = () => {
             </Card>
 
             <Card className="p-6 shadow-card text-center">
-              <div className="relative w-32 h-32 mx-auto mb-4 group cursor-pointer">
-                <div className="absolute inset-0 gradient-primary rounded-full blur-xl opacity-50 group-hover:opacity-80 transition-smooth" />
-                <div className="relative w-32 h-32 rounded-full gradient-primary text-primary-foreground flex items-center justify-center text-5xl font-extrabold shadow-glow">
-                  M
-                </div>
-                <div className="absolute bottom-0 right-0 h-9 w-9 rounded-full bg-card border-2 border-border flex items-center justify-center shadow-soft group-hover:scale-110 transition-bounce">
-                  <Camera className="h-4 w-4" />
-                </div>
-              </div>
-              <p className="font-extrabold text-lg">Maria Silva</p>
-              <p className="text-xs text-muted-foreground">Doces da Maria</p>
+              <AvatarUpload size={128} fallbackInitial={initial} className="mb-4" />
+              <p className="font-extrabold text-lg">{displayName}</p>
+              <p className="text-xs text-muted-foreground">{businessName}</p>
               <Badge className="mt-3 gradient-primary text-primary-foreground border-0">Plano Free</Badge>
               <Button variant="outline" className="w-full mt-4" size="sm">
                 <Sparkles className="h-3.5 w-3.5" /> Upgrade Pro
