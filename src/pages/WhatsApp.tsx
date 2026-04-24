@@ -50,7 +50,7 @@ const WhatsAppPage = () => {
   return (
     <DashboardLayout
       title="WhatsApp & Conexão"
-      subtitle="Gerencie seu bot e veja a integração N8N em tempo real"
+      subtitle="Gerencie seu bot e veja a integração em tempo real"
       actions={
         <Button variant="success" className="rounded-xl" onClick={() => toast.success("Mensagem de teste enviada!")}>
           <Send className="h-4 w-4" /> Enviar teste
@@ -58,13 +58,13 @@ const WhatsAppPage = () => {
       }
     >
       {/* Status cards */}
-      <div className="grid gap-4 md:grid-cols-4 mb-6">
+      <div className="grid gap-4 md:grid-cols-3 mb-6">
         <Card className="p-5 shadow-card border-success/30 bg-success-soft/40 relative overflow-hidden">
           <div className="absolute top-3 right-3 flex items-center justify-center h-10 w-10 rounded-full">
             <span className="absolute inline-flex h-3 w-3 rounded-full bg-success animate-pulse-ring" />
             <span className="relative inline-flex h-3 w-3 rounded-full bg-success" />
           </div>
-          <p className="text-xs font-bold uppercase text-success-deep tracking-wider">Status N8N</p>
+          <p className="text-xs font-bold uppercase text-success-deep tracking-wider">Status do Bot</p>
           <p className="text-2xl font-extrabold text-success-deep mt-1">Conectado</p>
           <p className="text-xs text-muted-foreground mt-1">Última sync: agora</p>
         </Card>
@@ -79,12 +79,6 @@ const WhatsAppPage = () => {
           <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Tempo médio</p>
           <p className="text-2xl font-extrabold mt-1">1.2s</p>
           <p className="text-xs text-muted-foreground mt-1">resposta do bot</p>
-        </Card>
-        <Card className="p-5 shadow-card hover-lift">
-          <Bot className="h-5 w-5 text-primary mb-2" />
-          <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Taxa sucesso</p>
-          <p className="text-2xl font-extrabold mt-1">98.4%</p>
-          <p className="text-xs text-muted-foreground mt-1">comandos compreendidos</p>
         </Card>
       </div>
 
