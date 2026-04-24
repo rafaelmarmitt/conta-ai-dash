@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,11 @@ import { toast } from "sonner";
 import { CopyButton } from "@/components/CopyButton";
 
 const Perfil = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const validTabs = ["dados", "metas", "conquistas", "config"];
+  const activeTab = validTabs.includes(tabParam || "") ? (tabParam as string) : "dados";
+
   const meta = 8000;
   const atual = 7300;
   const pct = Math.round((atual / meta) * 100);
@@ -30,7 +36,7 @@ const Perfil = () => {
 
   return (
     <DashboardLayout title="Perfil do Negócio" subtitle="Gerencie dados, metas e configurações">
-      <Tabs defaultValue="dados" className="w-full">
+      <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
         <TabsList className="mb-5 bg-card border border-border p-1 rounded-xl">
           <TabsTrigger value="dados" className="rounded-lg data-[state=active]:gradient-primary data-[state=active]:text-primary-foreground">Dados</TabsTrigger>
           <TabsTrigger value="metas" className="rounded-lg data-[state=active]:gradient-primary data-[state=active]:text-primary-foreground">Metas</TabsTrigger>

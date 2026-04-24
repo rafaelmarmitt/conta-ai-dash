@@ -103,10 +103,10 @@ export function DashboardLayout({ title, subtitle, actions, children }: Props) {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/perfil"><UserIcon className="h-4 w-4" /> Perfil do negócio</Link>
+                    <Link to="/perfil?tab=dados"><UserIcon className="h-4 w-4" /> Perfil do negócio</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/perfil"><Settings className="h-4 w-4" /> Configurações</Link>
+                    <Link to="/perfil?tab=config"><Settings className="h-4 w-4" /> Configurações</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
