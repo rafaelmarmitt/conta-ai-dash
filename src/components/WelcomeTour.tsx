@@ -175,11 +175,23 @@ export function WelcomeTour() {
                   ))}
                 </ol>
 
-                <Button size="sm" className="w-full rounded-lg bg-whatsapp text-white hover:bg-whatsapp/90" asChild>
-                  <Link to="/whatsapp" onClick={() => setOpen(false)}>
-                    <MessageCircle className="h-4 w-4" /> Conectar agora
-                    <ArrowRight className="h-4 w-4 ml-auto" />
-                  </Link>
+                <Button
+                  size="sm"
+                  className="w-full rounded-lg bg-whatsapp text-white hover:bg-whatsapp/90 disabled:opacity-100"
+                  onClick={() => completeTourAndGo("/whatsapp", "whatsapp")}
+                  disabled={navigating !== null || saving}
+                  aria-label="Ir para a página de conexão do WhatsApp"
+                >
+                  {navigating === "whatsapp" ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Abrindo página…
+                    </>
+                  ) : (
+                    <>
+                      <MessageCircle className="h-4 w-4" /> Conectar agora
+                      <ArrowRight className="h-4 w-4 ml-auto" />
+                    </>
+                  )}
                 </Button>
               </div>
 
