@@ -265,6 +265,10 @@ const Impostos = () => {
                 <div key={i} className="h-16 rounded-xl bg-muted/40 animate-pulse" />
               ))}
             </div>
+          ) : months.length === 0 ? (
+            <div className="p-8 text-center text-sm text-muted-foreground rounded-xl bg-muted/30 border border-dashed">
+              Você não tinha conta no Conta.AI em {year}. Selecione um ano a partir do seu cadastro para ver as obrigações.
+            </div>
           ) : (
             <div className="space-y-2">
               {months.map((m, i) => {
