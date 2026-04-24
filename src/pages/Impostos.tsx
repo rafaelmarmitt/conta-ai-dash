@@ -253,7 +253,9 @@ const Impostos = () => {
             </div>
             <div>
               <h2 className="text-base font-bold">DAS de {year}</h2>
-              <p className="text-xs text-muted-foreground">12 obrigações mensais — vencimento todo dia 20</p>
+              <p className="text-xs text-muted-foreground">
+                {months.length} {months.length === 1 ? "obrigação mensal" : "obrigações mensais"} — vencimento todo dia 20
+              </p>
             </div>
           </div>
 
