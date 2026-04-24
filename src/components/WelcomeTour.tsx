@@ -111,22 +111,49 @@ export function WelcomeTour() {
         <div className="px-6 py-5 space-y-4 max-h-[55vh] overflow-y-auto">
           {step === 0 && (
             <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-whatsapp-soft border border-whatsapp/20">
-                <Smartphone className="h-5 w-5 text-whatsapp shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-foreground text-sm">Conecte seu WhatsApp</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Escaneie o QR Code dentro de "WhatsApp → Conectar". Nossa tecnologia segura faz a ponte entre o seu Zap e este painel.
-                  </p>
-                  <Button size="sm" variant="outline" className="rounded-lg mt-2" asChild>
-                    <Link to="/whatsapp" onClick={() => setOpen(false)}>
-                      <MessageCircle className="h-3.5 w-3.5" /> Conectar agora
-                    </Link>
-                  </Button>
+              <div className="rounded-2xl border-2 border-whatsapp/30 bg-gradient-to-br from-whatsapp-soft/60 to-card p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-11 w-11 rounded-xl bg-whatsapp flex items-center justify-center shrink-0 shadow-md">
+                    <MessageCircle className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-foreground text-sm leading-tight">
+                      Conecte o seu WhatsApp ao Conta.AI
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Leva menos de 1 minuto e é 100% seguro 🔒
+                    </p>
+                  </div>
                 </div>
+
+                <ol className="space-y-2 mb-4">
+                  {[
+                    { n: 1, t: "Abra a página \"WhatsApp\"", d: "Clique no botão abaixo para ir direto." },
+                    { n: 2, t: "Escaneie o QR Code", d: "Use a câmera do seu WhatsApp (Aparelhos conectados)." },
+                    { n: 3, t: "Pronto! Já pode falar com o bot", d: "As mensagens viram dados no seu painel." },
+                  ].map((s) => (
+                    <li key={s.n} className="flex gap-3 items-start">
+                      <span className="h-6 w-6 rounded-full bg-whatsapp text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                        {s.n}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-foreground leading-tight">{s.t}</p>
+                        <p className="text-[11px] text-muted-foreground leading-snug">{s.d}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+
+                <Button size="sm" className="w-full rounded-lg bg-whatsapp text-white hover:bg-whatsapp/90" asChild>
+                  <Link to="/whatsapp" onClick={() => setOpen(false)}>
+                    <MessageCircle className="h-4 w-4" /> Conectar agora
+                    <ArrowRight className="h-4 w-4 ml-auto" />
+                  </Link>
+                </Button>
               </div>
-              <p className="text-xs text-muted-foreground text-center">
-                💡 Você pode pular esse passo e conectar depois — o painel funciona com dados de exemplo.
+
+              <p className="text-[11px] text-muted-foreground text-center leading-snug">
+                💡 Sem pressa? Você pode pular e conectar depois — o painel já vem com dados de exemplo para você explorar.
               </p>
             </div>
           )}
