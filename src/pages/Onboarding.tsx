@@ -387,6 +387,7 @@ export default function Onboarding() {
                 </Label>
                 <Input
                   id="biz-name"
+                  ref={step === 2 ? firstFieldRef : undefined}
                   value={businessName}
                   onChange={(e) => {
                     setBusinessName(e.target.value);
@@ -394,9 +395,18 @@ export default function Onboarding() {
                   }}
                   placeholder="Ex: Doces da Maria"
                   maxLength={80}
-                  className={cn("h-11 rounded-xl", errors.businessName && "border-destructive")}
+                  className={cn(
+                    "h-11 rounded-xl pr-10",
+                    errors.businessName && "border-destructive",
+                    !errors.businessName && businessName.trim().length >= 2 && "border-success/60"
+                  )}
                   aria-invalid={!!errors.businessName}
                 />
+                {!errors.businessName && businessName.trim().length >= 2 && (
+                  <p className="text-xs text-success-deep flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" /> Nome ótimo!
+                  </p>
+                )}
                 {errors.businessName && (
                   <p className="text-xs text-destructive flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" /> {errors.businessName}
