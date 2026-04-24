@@ -19,6 +19,7 @@ import {
   ArrowLeft,
   Sparkles,
   Copy,
+  Receipt,
 } from "lucide-react";
 import mascot from "@/assets/mascot.png";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,7 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
-const STEP_COUNT = 3;
+const STEP_COUNT = 4;
 
 export function WelcomeTour() {
   const { profile, user, refreshProfile } = useAuth();
@@ -84,12 +85,14 @@ export function WelcomeTour() {
                 <DialogTitle className="text-lg sm:text-xl">
                   {step === 0 && "Bem-vindo ao Conta.AI! 👋"}
                   {step === 1 && "Comandos do bot 💬"}
-                  {step === 2 && "Defina sua meta mensal 🎯"}
+                  {step === 2 && "DAS sempre em dia 📑"}
+                  {step === 3 && "Defina sua meta mensal 🎯"}
                 </DialogTitle>
                 <DialogDescription className="text-xs">
-                  {step === 0 && "Vamos te mostrar como tudo funciona em 3 passos rápidos."}
+                  {step === 0 && "Vamos te mostrar como tudo funciona em 4 passos rápidos."}
                   {step === 1 && "É só escrever em linguagem natural — fácil assim."}
-                  {step === 2 && "Para acompanhar seu progresso em tempo real."}
+                  {step === 2 && "Nunca mais esqueça do imposto do MEI."}
+                  {step === 3 && "Para acompanhar seu progresso em tempo real."}
                 </DialogDescription>
               </DialogHeader>
             </div>
@@ -163,6 +166,38 @@ export function WelcomeTour() {
           )}
 
           {step === 2 && (
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-warning-soft border border-warning/30">
+                <Receipt className="h-5 w-5 text-warning-foreground shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-foreground text-sm">Acompanhamento do DAS MEI</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    O Conta.AI lembra-te de pagar o teu DAS. Basta avisares o bot no
+                    WhatsApp quando fizeres o pagamento ou atualizares aqui no painel —
+                    nós cuidamos do resto.
+                  </p>
+                  <Button size="sm" variant="outline" className="rounded-lg mt-2" asChild>
+                    <Link to="/impostos" onClick={() => setOpen(false)}>
+                      <Receipt className="h-3.5 w-3.5" /> Ver impostos
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="rounded-xl border border-border p-3 bg-card">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                  Exemplo no WhatsApp
+                </p>
+                <p className="text-sm font-medium text-foreground italic">
+                  "Paguei o DAS de Janeiro"
+                </p>
+                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                  <ArrowRight className="h-3 w-3" /> O bot marca o mês como pago automaticamente.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-4 rounded-xl gradient-mesh border border-primary/20">
                 <Target className="h-6 w-6 text-primary shrink-0" />

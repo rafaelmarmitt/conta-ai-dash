@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MockBadge } from "@/components/MockBadge";
 import { InfoTooltip } from "@/components/InfoTooltip";
 import { EmptyState } from "@/components/EmptyState";
+import { DasAlertCard } from "@/components/DasAlertCard";
 import mascot from "@/assets/mascot.png";
 
 const fluxoCaixa = [
@@ -217,6 +218,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Alerta DAS MEI do mês corrente */}
+      <DasAlertCard />
 
       {/* KPIs adaptativos */}
       <section aria-label="Indicadores principais" className="grid gap-4 md:gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 mb-6">

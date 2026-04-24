@@ -1,233 +1,434 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { CopyButton } from "@/components/CopyButton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  CalendarClock, CheckCircle2, Receipt, Download, AlertTriangle,
-  TrendingUp, FileText, Bell, Calculator
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { CopyButton } from "@/components/CopyButton";
+import { ComoPagarDasModal } from "@/components/ComoPagarDasModal";
+import {
+  AlertTriangle, CalendarClock, CheckCircle2, Clock, Edit3,
+  PiggyBank, Receipt, Sparkles, XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { MockBadge } from "@/components/MockBadge";
+import {
+  ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend,
+} from "recharts";
+import {
+  buildMonthRef, computeStatus, defaultDueDate, MESES_PT, useTaxes, type TaxRow,
+} from "@/hooks/useTaxes";
 
-interface HistItem { mes: string; valor: number; status: string; venc: string; codigo: string; }
+const DEFAULT_DAS_AMOUNT = 75.9; // valor sugerido do DAS Comércio/Indústria 2025
 
-const HISTORICO_MOCK: HistItem[] = [
-  { mes: "Junho/2025", valor: 75.9, status: "pendente", venc: "20/07/2025", codigo: "85800000007 590120250 720250000 099912345" },
-  { mes: "Maio/2025", valor: 75.9, status: "pago", venc: "20/06/2025", codigo: "85800000007 590120250 620250000 088812345" },
-  { mes: "Abril/2025", valor: 71.6, status: "pago", venc: "20/05/2025", codigo: "85800000007 160120250 520250000 077712345" },
-  { mes: "Março/2025", valor: 71.6, status: "pago", venc: "20/04/2025", codigo: "85800000007 160120250 420250000 066612345" },
-  { mes: "Fevereiro/2025", valor: 71.6, status: "pago", venc: "20/03/2025", codigo: "85800000007 160120250 320250000 055512345" },
-  { mes: "Janeiro/2025", valor: 71.6, status: "pago", venc: "20/02/2025", codigo: "85800000007 160120250 220250000 044412345" },
-];
-
-const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+const formatBRL = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const Impostos = () => {
   const { user } = useAuth();
-  const [checked, setChecked] = useState(false);
-  const [historico, setHistorico] = useState<HistItem[]>(HISTORICO_MOCK);
-  const [isMock, setIsMock] = useState(true);
-  const [revenue12m, setRevenue12m] = useState(56400);
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const { rows, byMonth, loading, refetch } = useTaxes(year);
 
+  const [defaultAmount, setDefaultAmount] = useState<number>(DEFAULT_DAS_AMOUNT);
+  const [editing, setEditing] = useState<{ row?: TaxRow; monthIdx: number } | null>(null);
+  const [editAmount, setEditAmount] = useState("");
+  const [editPix, setEditPix] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // Detectar valor mais recente já cadastrado e usar como sugerido
   useEffect(() => {
-    const load = async () => {
-      if (!user) return;
-      const { data: taxes } = await supabase.from("taxes").select("*").eq("user_id", user.id).order("reference_year", { ascending: false }).order("reference_month", { ascending: false });
-      if (taxes && taxes.length > 0) {
-        setHistorico(taxes.map((t: any) => ({
-          mes: `${MESES[t.reference_month - 1]}/${t.reference_year}`,
-          valor: Number(t.das_amount),
-          status: t.status,
-          venc: t.due_date ? new Date(t.due_date).toLocaleDateString("pt-BR") : "—",
-          codigo: t.notes || "",
-        })));
-        setIsMock(false);
-        const acc = taxes.reduce((s: number, t: any) => s + Number(t.revenue || 0), 0);
-        if (acc > 0) setRevenue12m(acc);
-      }
-    };
-    load();
-  }, [user]);
+    if (rows.length > 0) {
+      const last = [...rows].sort((a, b) => (b.created_at > a.created_at ? 1 : -1))[0];
+      if (last?.amount && Number(last.amount) > 0) setDefaultAmount(Number(last.amount));
+    }
+  }, [rows]);
 
-  const limite = { label: "Receita acumulada (12 meses)", valor: revenue12m, max: 81000 };
-  const pctLimite = (limite.valor / limite.max) * 100;
+  const months = useMemo(() => {
+    return MESES_PT.map((nome, idx) => {
+      const monthRef = buildMonthRef(idx, year);
+      const row = byMonth.get(monthRef);
+      const status = row ? computeStatus(row) : "pendente";
+      return { idx, nome, monthRef, row, status };
+    });
+  }, [byMonth, year]);
+
+  const stats = useMemo(() => {
+    const pagos = months.filter((m) => m.status === "pago").length;
+    const vencidos = months.filter((m) => m.status === "vencido").length;
+    const pendentes = months.filter((m) => m.status === "pendente").length;
+    const totalPago = months.reduce(
+      (s, m) => s + (m.status === "pago" ? Number(m.row?.amount || 0) : 0),
+      0,
+    );
+    return { pagos, vencidos, pendentes, totalPago };
+  }, [months]);
+
+  const chartData = [
+    { name: "Pagos", value: stats.pagos, color: "hsl(var(--success))" },
+    { name: "Pendentes", value: stats.pendentes, color: "hsl(var(--muted-foreground))" },
+    { name: "Vencidos", value: stats.vencidos, color: "hsl(var(--destructive))" },
+  ].filter((d) => d.value > 0);
+
+  // CRUD ----------------------------------------------------------------
+  const upsertTax = async (
+    monthIdx: number,
+    patch: Partial<TaxRow>,
+  ): Promise<TaxRow | null> => {
+    if (!user) return null;
+    const monthRef = buildMonthRef(monthIdx, year);
+    const existing = byMonth.get(monthRef);
+    if (existing) {
+      const { data, error } = await supabase
+        .from("taxes")
+        .update(patch)
+        .eq("id", existing.id)
+        .select()
+        .maybeSingle();
+      if (error) { toast.error(error.message); return null; }
+      return data as TaxRow;
+    }
+    const { data, error } = await supabase
+      .from("taxes")
+      .insert({
+        user_id: user.id,
+        month_reference: monthRef,
+        due_date: defaultDueDate(monthIdx, year),
+        amount: defaultAmount,
+        status: "pendente",
+        ...patch,
+      })
+      .select()
+      .maybeSingle();
+    if (error) { toast.error(error.message); return null; }
+    return data as TaxRow;
+  };
+
+  const marcarPago = async (monthIdx: number) => {
+    const ok = await upsertTax(monthIdx, {
+      status: "pago",
+      paid_at: new Date().toISOString(),
+    });
+    if (ok) {
+      toast.success(`DAS de ${MESES_PT[monthIdx]} marcado como pago! ✅`);
+      refetch();
+    }
+  };
+
+  const desmarcarPago = async (row: TaxRow) => {
+    const { error } = await supabase
+      .from("taxes")
+      .update({ status: "pendente", paid_at: null })
+      .eq("id", row.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Pagamento desfeito.");
+    refetch();
+  };
+
+  const openEdit = (monthIdx: number, row?: TaxRow) => {
+    setEditing({ monthIdx, row });
+    setEditAmount(String(row?.amount ?? defaultAmount));
+    setEditPix(row?.pix_code ?? "");
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    setSaving(true);
+    const amountNum = Number(editAmount.replace(",", "."));
+    const ok = await upsertTax(editing.monthIdx, {
+      amount: isNaN(amountNum) ? defaultAmount : amountNum,
+      pix_code: editPix.trim() || null,
+    });
+    setSaving(false);
+    if (ok) {
+      toast.success("Informações atualizadas.");
+      setEditing(null);
+      refetch();
+    }
+  };
 
   return (
     <DashboardLayout
       title="Impostos — DAS MEI"
-      subtitle="Controle total dos seus boletos e enquadramento MEI"
+      subtitle="Acompanhe os boletos do ano e marque os pagamentos."
       actions={
-        <Button variant="outline" className="rounded-xl">
-          <Bell className="h-4 w-4" /> Configurar lembretes
-        </Button>
+        <>
+          <ComoPagarDasModal />
+        </>
       }
     >
-      <div className="mb-4"><MockBadge show={isMock} /></div>
-      {/* Alerta de vencimento */}
-      <Card className="p-5 shadow-coral mb-6 bg-warning-soft border-warning/30 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-warning/20 blur-2xl animate-blob" />
-        <div className="relative flex items-start gap-4 flex-wrap">
-          <div className="h-12 w-12 rounded-2xl bg-warning text-warning-foreground flex items-center justify-center shrink-0">
-            <AlertTriangle className="h-6 w-6" />
+      {/* Configuração do valor padrão + ano */}
+      <Card className="p-5 mb-6 shadow-card">
+        <div className="flex flex-wrap items-end gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="ano-select" className="text-xs uppercase tracking-wider text-muted-foreground">
+              Ano de referência
+            </Label>
+            <select
+              id="ano-select"
+              value={year}
+              onChange={(e) => setYear(Number(e.target.value))}
+              className="h-10 rounded-xl border border-input bg-background px-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {[now.getFullYear() + 1, now.getFullYear(), now.getFullYear() - 1, now.getFullYear() - 2].map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
           </div>
-          <div className="flex-1 min-w-[200px]">
-            <p className="font-bold text-foreground">DAS de Junho vence em 12 dias</p>
-            <p className="text-sm text-muted-foreground">Evite multa de 0,33% ao dia + juros Selic. Quite até <span className="font-bold text-warning-foreground">20/07/2025</span>.</p>
+
+          <div className="space-y-1.5 flex-1 min-w-[200px] max-w-[280px]">
+            <Label htmlFor="default-das" className="text-xs uppercase tracking-wider text-muted-foreground">
+              Valor sugerido do DAS (R$)
+            </Label>
+            <Input
+              id="default-das"
+              inputMode="decimal"
+              value={String(defaultAmount).replace(".", ",")}
+              onChange={(e) => {
+                const v = Number(e.target.value.replace(",", "."));
+                if (!isNaN(v)) setDefaultAmount(v);
+              }}
+              className="h-10 rounded-xl"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Esse valor é usado quando você gera o registro de um mês novo.
+            </p>
           </div>
-          <Button variant="hero" className="rounded-xl">
-            <Download className="h-4 w-4" /> Pagar agora
-          </Button>
+
+          <div className="ml-auto flex flex-wrap gap-2">
+            <Badge className="bg-success-soft text-success-deep border-0 font-semibold">
+              <CheckCircle2 className="h-3 w-3 mr-1" /> {stats.pagos} pagos
+            </Badge>
+            <Badge className="bg-muted text-foreground border-0 font-semibold">
+              <Clock className="h-3 w-3 mr-1" /> {stats.pendentes} pendentes
+            </Badge>
+            <Badge className="bg-destructive/15 text-destructive border-0 font-semibold">
+              <XCircle className="h-3 w-3 mr-1" /> {stats.vencidos} vencidos
+            </Badge>
+          </div>
         </div>
       </Card>
 
       <div className="grid gap-5 lg:grid-cols-3">
-        {/* DAS atual */}
-        <Card className="p-6 shadow-card lg:col-span-2 gradient-mesh border-primary/20 relative overflow-hidden">
-          <div className="absolute -bottom-20 -right-20 h-60 w-60 rounded-full bg-primary/10 blur-3xl animate-blob" />
-          <div className="relative">
-            <div className="flex items-start justify-between gap-3 mb-5 flex-wrap">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-primary mb-1">DAS deste mês</p>
-                <p className="text-5xl font-extrabold text-gradient-primary">R$ 75,90</p>
-                <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1.5">
-                  <CalendarClock className="h-4 w-4" /> Vence em <span className="font-bold text-foreground">20/07/2025</span>
-                </p>
-              </div>
-              <Badge className="bg-warning text-warning-foreground border-0 font-bold text-sm px-3 py-1">Pendente</Badge>
-            </div>
-
-            <div className="rounded-2xl bg-card p-4 mb-4 border border-border">
-              <div className="flex items-center gap-3 mb-3">
-                <Checkbox id="pago" checked={checked} onCheckedChange={(v) => setChecked(!!v)} className="h-5 w-5" />
-                <label htmlFor="pago" className="text-sm font-semibold cursor-pointer flex-1">
-                  Já paguei o boleto deste mês
-                </label>
-                {checked && <CheckCircle2 className="h-5 w-5 text-success animate-scale-in" />}
-              </div>
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-muted">
-                <code className="flex-1 text-[11px] font-mono text-muted-foreground truncate">
-                  85800000007 590120250 720250000 099912345
-                </code>
-                <CopyButton text="85800000007590120250720250000099912345" label="Copiar" size="sm" variant="outline" />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button variant="hero" onClick={() => toast.success("Boleto baixado!")}>
-                <Download className="h-4 w-4" /> Baixar boleto PDF
-              </Button>
-              <Button variant="outline">
-                <FileText className="h-4 w-4" /> Ver instruções
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        {/* Resumo do ano */}
-        <Card className="p-6 shadow-card">
-          <h2 className="text-base font-bold mb-1">Resumo de 2025</h2>
-          <p className="text-xs text-muted-foreground mb-4">Janeiro a Dezembro</p>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-xl bg-success-soft border border-success/20">
-              <span className="text-sm font-semibold text-success-deep flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" /> Pagos
-              </span>
-              <span className="text-2xl font-extrabold text-success-deep">5</span>
-            </div>
-            <div className="flex items-center justify-between p-3 rounded-xl bg-warning-soft border border-warning/20">
-              <span className="text-sm font-semibold text-warning-foreground flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" /> Pendentes
-              </span>
-              <span className="text-2xl font-extrabold text-warning-foreground">1</span>
-            </div>
-            <div className="flex items-center justify-between p-3 rounded-xl gradient-primary text-primary-foreground">
-              <span className="text-sm font-semibold flex items-center gap-2">
-                <Calculator className="h-4 w-4" /> Total pago
-              </span>
-              <span className="text-xl font-extrabold">R$ 362,30</span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Limite MEI */}
-        <Card className="p-6 shadow-card lg:col-span-3">
-          <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-2xl gradient-info flex items-center justify-center shadow-glow">
-                <TrendingUp className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div>
-                <h2 className="text-base font-bold">Limite de faturamento MEI</h2>
-                <p className="text-xs text-muted-foreground">Acompanhe para não estourar o teto de R$ 81.000/ano</p>
-              </div>
-            </div>
-            <Badge className="bg-info-soft text-info border-0 font-bold">
-              {pctLimite.toFixed(0)}% do limite
-            </Badge>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-semibold">R$ {limite.valor.toLocaleString("pt-BR")}</span>
-              <span className="text-muted-foreground">de R$ {limite.max.toLocaleString("pt-BR")}</span>
-            </div>
-            <Progress value={pctLimite} className="h-3" />
-            <p className="text-xs text-muted-foreground">
-              Você ainda pode faturar <span className="font-bold text-foreground">R$ {(limite.max - limite.valor).toLocaleString("pt-BR")}</span> este ano sem mudar de regime.
-            </p>
-          </div>
-        </Card>
-
-        {/* Histórico */}
-        <Card className="p-6 shadow-card lg:col-span-3">
+        {/* Tabela mensal */}
+        <Card className="p-5 shadow-card lg:col-span-2">
           <div className="flex items-center gap-3 mb-5">
             <div className="h-11 w-11 rounded-2xl bg-primary-soft flex items-center justify-center">
               <Receipt className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-base font-bold">Histórico de pagamentos</h2>
-              <p className="text-xs text-muted-foreground">{historico.length} boletos nos últimos meses</p>
+              <h2 className="text-base font-bold">DAS de {year}</h2>
+              <p className="text-xs text-muted-foreground">12 obrigações mensais — vencimento todo dia 20</p>
             </div>
           </div>
-          <div className="space-y-2">
-            {historico.map((h, i) => (
-              <div
-                key={h.mes}
-                className="grid grid-cols-12 items-center gap-3 p-4 rounded-xl border border-border hover:border-primary/30 hover:bg-muted/30 transition-smooth animate-fade-in"
-                style={{ animationDelay: `${i * 50}ms` }}
-              >
-                <div className="col-span-12 sm:col-span-3">
-                  <p className="text-sm font-bold text-foreground">{h.mes}</p>
-                  <p className="text-xs text-muted-foreground">Vencimento: {h.venc}</p>
-                </div>
-                <div className="col-span-6 sm:col-span-3">
-                  <p className="text-lg font-extrabold text-foreground">R$ {h.valor.toFixed(2).replace(".", ",")}</p>
-                </div>
-                <div className="col-span-6 sm:col-span-3 text-right sm:text-left">
-                  {h.status === "pago" ? (
-                    <Badge className="bg-success-soft text-success-deep border-0 font-semibold">
-                      <CheckCircle2 className="h-3 w-3 mr-1" /> Pago
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-warning text-warning-foreground border-0 font-semibold">Pendente</Badge>
-                  )}
-                </div>
-                <div className="col-span-12 sm:col-span-3 flex justify-start sm:justify-end gap-1">
-                  <CopyButton text={h.codigo.replace(/\s/g, "")} variant="ghost" />
-                  <Button size="icon" variant="ghost">
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </div>
+
+          {loading ? (
+            <div className="space-y-2">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-16 rounded-xl bg-muted/40 animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {months.map((m, i) => {
+                const isPago = m.status === "pago";
+                const isVencido = m.status === "vencido";
+                const isCurrent = m.idx === now.getMonth() && year === now.getFullYear();
+                return (
+                  <div
+                    key={m.monthRef}
+                    className={`grid grid-cols-12 items-center gap-3 p-4 rounded-xl border transition-smooth animate-fade-in ${
+                      isPago
+                        ? "border-success/20 bg-success-soft/40"
+                        : isVencido
+                          ? "border-destructive/30 bg-destructive/5"
+                          : isCurrent
+                            ? "border-primary/30 bg-primary-soft/30"
+                            : "border-border hover:border-primary/30 hover:bg-muted/30"
+                    }`}
+                    style={{ animationDelay: `${i * 30}ms` }}
+                  >
+                    <div className="col-span-12 sm:col-span-3">
+                      <p className="text-sm font-bold text-foreground flex items-center gap-2">
+                        {m.nome}
+                        {isCurrent && (
+                          <Badge className="bg-primary text-primary-foreground border-0 text-[10px] px-1.5 py-0">
+                            Atual
+                          </Badge>
+                        )}
+                      </p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <CalendarClock className="h-3 w-3" />
+                        Vence 20/{String(m.idx + 1).padStart(2, "0")}/{year}
+                      </p>
+                    </div>
+
+                    <div className="col-span-6 sm:col-span-3">
+                      <p className="text-lg font-extrabold text-foreground">
+                        {formatBRL(Number(m.row?.amount ?? defaultAmount))}
+                      </p>
+                      {m.row?.pix_code && (
+                        <p className="text-[10px] text-muted-foreground truncate">Pix salvo ✓</p>
+                      )}
+                    </div>
+
+                    <div className="col-span-6 sm:col-span-3">
+                      {isPago ? (
+                        <Badge className="bg-success text-success-foreground border-0 font-semibold">
+                          <CheckCircle2 className="h-3 w-3 mr-1" /> Pago
+                        </Badge>
+                      ) : isVencido ? (
+                        <Badge className="bg-destructive text-destructive-foreground border-0 font-semibold">
+                          <AlertTriangle className="h-3 w-3 mr-1" /> Vencido
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-muted text-foreground border-0 font-semibold">
+                          <Clock className="h-3 w-3 mr-1" /> Pendente
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="col-span-12 sm:col-span-3 flex flex-wrap justify-start sm:justify-end gap-1.5">
+                      {m.row?.pix_code && (
+                        <CopyButton text={m.row.pix_code} variant="ghost" />
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => openEdit(m.idx, m.row)}
+                        aria-label={`Editar DAS de ${m.nome}`}
+                      >
+                        <Edit3 className="h-3.5 w-3.5" />
+                      </Button>
+                      {isPago ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => m.row && desmarcarPago(m.row)}
+                        >
+                          Desfazer
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="hero"
+                          onClick={() => marcarPago(m.idx)}
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Marcar pago
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+
+        {/* Gráfico Saúde Fiscal */}
+        <Card className="p-6 shadow-card">
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h2 className="text-base font-bold">Saúde Fiscal {year}</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            Pagos vs. pendentes vs. vencidos
+          </p>
+          <div className="h-56 w-full">
+            {chartData.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+                Sem registros ainda neste ano.
               </div>
-            ))}
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={3}
+                  >
+                    {chartData.map((d) => (
+                      <Cell key={d.name} fill={d.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 12,
+                    }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          <div className="mt-4 p-4 rounded-xl gradient-mesh border border-primary/20">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary mb-1">
+              <PiggyBank className="h-4 w-4" /> Total pago em {year}
+            </div>
+            <p className="text-3xl font-extrabold text-foreground">{formatBRL(stats.totalPago)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Equivalente a {stats.pagos} {stats.pagos === 1 ? "mês" : "meses"} de DAS quitados.
+            </p>
           </div>
         </Card>
       </div>
+
+      {/* Modal de edição */}
+      <Dialog open={!!editing} onOpenChange={(v) => !v && !saving && setEditing(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editing ? `DAS de ${MESES_PT[editing.monthIdx]}/${year}` : ""}
+            </DialogTitle>
+            <DialogDescription>
+              Atualize o valor e cole o código Pix copia-e-cola, se quiser guardar para depois.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-amount">Valor (R$)</Label>
+              <Input
+                id="edit-amount"
+                inputMode="decimal"
+                value={editAmount}
+                onChange={(e) => setEditAmount(e.target.value)}
+                placeholder="75,90"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-pix">Código Pix (opcional)</Label>
+              <Input
+                id="edit-pix"
+                value={editPix}
+                onChange={(e) => setEditPix(e.target.value)}
+                placeholder="00020126..."
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditing(null)} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button variant="hero" onClick={saveEdit} disabled={saving}>
+              {saving ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

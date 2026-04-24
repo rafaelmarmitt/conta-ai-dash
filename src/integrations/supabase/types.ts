@@ -389,43 +389,37 @@ export type Database = {
       }
       taxes: {
         Row: {
+          amount: number
           created_at: string
-          das_amount: number
           due_date: string | null
           id: string
-          notes: string | null
+          month_reference: string
           paid_at: string | null
-          reference_month: number
-          reference_year: number
-          revenue: number
+          pix_code: string | null
           status: Database["public"]["Enums"]["tax_status"]
           updated_at: string
           user_id: string
         }
         Insert: {
+          amount?: number
           created_at?: string
-          das_amount?: number
           due_date?: string | null
           id?: string
-          notes?: string | null
+          month_reference: string
           paid_at?: string | null
-          reference_month: number
-          reference_year: number
-          revenue?: number
+          pix_code?: string | null
           status?: Database["public"]["Enums"]["tax_status"]
           updated_at?: string
           user_id: string
         }
         Update: {
+          amount?: number
           created_at?: string
-          das_amount?: number
           due_date?: string | null
           id?: string
-          notes?: string | null
+          month_reference?: string
           paid_at?: string | null
-          reference_month?: number
-          reference_year?: number
-          revenue?: number
+          pix_code?: string | null
           status?: Database["public"]["Enums"]["tax_status"]
           updated_at?: string
           user_id?: string
@@ -461,7 +455,7 @@ export type Database = {
         | "transferencia"
         | "outro"
       sale_status: "pendente" | "pago" | "cancelado" | "reembolsado"
-      tax_status: "pendente" | "pago" | "atrasado"
+      tax_status: "pendente" | "pago" | "atrasado" | "vencido"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -613,7 +607,7 @@ export const Constants = {
         "outro",
       ],
       sale_status: ["pendente", "pago", "cancelado", "reembolsado"],
-      tax_status: ["pendente", "pago", "atrasado"],
+      tax_status: ["pendente", "pago", "atrasado", "vencido"],
     },
   },
 } as const
