@@ -159,7 +159,7 @@ export function DashboardLayout({ title, subtitle, actions, children }: Props) {
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-hidden">
+          <main className="flex-1 min-w-0 p-4 md:p-6 lg:p-8 overflow-x-hidden">
             <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 animate-fade-in">
               <div>
                 <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">{title}</h1>
