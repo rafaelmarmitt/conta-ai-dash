@@ -126,7 +126,10 @@ const Landing = () => {
                 muted
                 loop
                 playsInline
-                preload="metadata"
+                preload="auto"
+                width={1280}
+                height={720}
+                {...({ fetchpriority: "high" } as any)}
                 aria-label="Demonstração animada do Conta.AI"
                 className="w-full h-auto rounded-3xl drop-shadow-2xl aspect-video object-cover bg-card"
               />
