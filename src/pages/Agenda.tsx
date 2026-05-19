@@ -113,21 +113,21 @@ export default function Agenda() {
         </Card>
       </div>
 
-      <Card className="p-4 mb-6 shadow-card">
-        <div className="grid grid-cols-7 gap-2">
+      <Card className="p-4 mb-6 shadow-card overflow-hidden">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 -mx-1 sm:mx-0">
           {semana.map((d, i) => {
             const ativo = i === (hoje === 0 ? 6 : hoje - 1);
             return (
               <button
                 key={d}
-                className={`p-3 rounded-xl text-center transition-bounce ${
+                className={`min-w-0 p-2 sm:p-3 rounded-xl text-center transition-bounce ${
                   ativo ? "gradient-primary text-primary-foreground shadow-glow" : "hover:bg-muted"
                 }`}
               >
                 <p className="text-[10px] font-bold uppercase opacity-80">{d}</p>
-                <p className="text-xl font-extrabold mt-1">{15 + i}</p>
-                <p className={`text-[10px] mt-1 ${ativo ? "opacity-90" : "text-muted-foreground"}`}>
-                  {[3, 5, 4, 5, 7, 6, 0][i]} agend.
+                <p className="text-lg sm:text-xl font-extrabold mt-1">{15 + i}</p>
+                <p className={`text-[9px] sm:text-[10px] mt-1 ${ativo ? "opacity-90" : "text-muted-foreground"}`}>
+                  {[3, 5, 4, 5, 7, 6, 0][i]} <span className="hidden sm:inline">agend.</span>
                 </p>
               </button>
             );
