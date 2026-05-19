@@ -116,12 +116,16 @@ const Landing = () => {
               className="relative"
             >
               <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/20 via-success/15 to-transparent rounded-[3rem] blur-2xl" />
-              <img
-                src={heroMockup}
-                alt="Mockup do Conta.AI mostrando WhatsApp e dashboard"
-                width={1280}
-                height={960}
-                className="w-full h-auto drop-shadow-2xl"
+              <video
+                src="/conta-ai-hero.mp4"
+                poster={heroMockup}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-label="Demonstração animada do Conta.AI"
+                className="w-full h-auto rounded-3xl drop-shadow-2xl aspect-video object-cover bg-card"
               />
               <motion.div
                 animate={{ y: [0, -10, 0] }}
