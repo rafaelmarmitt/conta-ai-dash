@@ -144,25 +144,25 @@ export default function Estoque() {
             return (
               <li
                 key={i}
-                className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-smooth animate-fade-in"
+                className="flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-muted/30 transition-smooth animate-fade-in"
                 style={{ animationDelay: `${i * 40}ms` }}
               >
                 <div className="h-12 w-12 rounded-xl bg-primary-soft flex items-center justify-center shrink-0 text-2xl">
                   📦
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <p className="font-bold truncate">{item.nome}</p>
-                    <Badge variant="secondary" className="text-[10px]">{item.categoria}</Badge>
-                    {item.status === "baixo" && <Badge className="bg-warning-soft text-warning-deep text-[10px] border-0">Baixo</Badge>}
-                    {item.status === "esgotado" && <Badge className="bg-destructive-soft text-destructive text-[10px] border-0">Esgotado</Badge>}
+                <div className="flex-1 min-w-0 basis-[60%] sm:basis-auto">
+                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                    <p className="font-bold truncate min-w-0">{item.nome}</p>
+                    <Badge variant="secondary" className="text-[10px] shrink-0">{item.categoria}</Badge>
+                    {item.status === "baixo" && <Badge className="bg-warning-soft text-warning-deep text-[10px] border-0 shrink-0">Baixo</Badge>}
+                    {item.status === "esgotado" && <Badge className="bg-destructive-soft text-destructive text-[10px] border-0 shrink-0">Esgotado</Badge>}
                   </div>
                   <Progress value={pct} className="h-1.5 max-w-xs" />
                   <p className="text-xs text-muted-foreground mt-1">
                     <span className="font-semibold text-foreground">{item.estoque}</span> em estoque · mínimo {item.minimo}
                   </p>
                 </div>
-                <div className="text-right shrink-0">
+                <div className="ml-auto text-right shrink-0">
                   <p className="font-extrabold">{formatBRL(item.preco)}</p>
                   <p className="text-[11px] text-muted-foreground">unidade</p>
                 </div>
