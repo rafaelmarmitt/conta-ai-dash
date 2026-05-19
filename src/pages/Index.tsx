@@ -253,21 +253,24 @@ const Index = () => {
         <Card className="p-6 shadow-card lg:col-span-2 relative overflow-hidden border-primary/20 gradient-mesh">
           <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-primary/10 blur-3xl animate-blob" />
           <div className="relative">
-            <div className="flex items-start justify-between gap-3 mb-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Target className="h-4 w-4 text-primary" />
+            <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <Target className="h-4 w-4 text-primary shrink-0" />
                   <p className="text-xs font-bold uppercase tracking-wider text-primary">Meta de Junho</p>
                   <InfoTooltip
                     label="Meta mensal"
                     content="Sua meta de faturamento bruto do mês. Ajuste em Perfil → Meta mensal."
                   />
                 </div>
-                <p className="text-3xl md:text-4xl font-extrabold text-foreground">
-                  {formatBRL(atualMensal)} <span className="text-lg font-medium text-muted-foreground">/ {formatBRL(metaMensal)}</span>
+                <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground break-words">
+                  {formatBRL(atualMensal)}
+                  <span className="block sm:inline text-base sm:text-lg font-medium text-muted-foreground sm:ml-1">
+                    / {formatBRL(metaMensal)}
+                  </span>
                 </p>
               </div>
-              <Badge className="gradient-success text-success-foreground border-0 font-bold shadow-success">
+              <Badge className="gradient-success text-success-foreground border-0 font-bold shadow-success shrink-0">
                 {pctMeta}% 🚀
               </Badge>
             </div>
