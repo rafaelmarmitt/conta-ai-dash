@@ -141,20 +141,20 @@ export default function Agenda() {
           {agendamentos.map((a, i) => (
             <li
               key={i}
-              className="flex items-center gap-4 p-4 rounded-2xl border-2 border-border hover:border-primary/40 hover-lift transition-bounce animate-fade-in"
+              className="flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border-2 border-border hover:border-primary/40 hover-lift transition-bounce animate-fade-in"
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <div className="text-center shrink-0">
                 <p className="text-xl font-extrabold text-primary">{a.hora}</p>
                 <p className="text-[10px] text-muted-foreground font-medium">{a.duracao}</p>
               </div>
-              <div className="h-12 w-px bg-border" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <User className="h-3.5 w-3.5 text-muted-foreground" />
-                  <p className="font-bold truncate">{a.cliente}</p>
+              <div className="hidden sm:block h-12 w-px bg-border" />
+              <div className="flex-1 min-w-0 basis-[60%] sm:basis-auto">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <p className="font-bold truncate min-w-0">{a.cliente}</p>
                   <Badge
-                    className={`text-[10px] border-0 ${
+                    className={`text-[10px] border-0 shrink-0 ${
                       a.status === "confirmado" ? "bg-success-soft text-success-deep" : "bg-warning-soft text-warning-deep"
                     }`}
                   >
@@ -164,11 +164,11 @@ export default function Agenda() {
                 <p className="text-sm text-muted-foreground truncate">{a.servico}</p>
                 {a.telefone && (
                   <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                    <Phone className="h-3 w-3" /> {a.telefone}
+                    <Phone className="h-3 w-3 shrink-0" /> {a.telefone}
                   </p>
                 )}
               </div>
-              <div className="text-right shrink-0">
+              <div className="ml-auto sm:ml-0 text-right shrink-0">
                 <p className="font-extrabold text-success-deep">{formatBRL(a.valor)}</p>
                 <Button size="sm" variant="ghost" className="h-7 text-[11px] mt-1">
                   Ver detalhes →
