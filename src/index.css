@@ -177,9 +177,11 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
-  body {
+  html, body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv11", "ss01";
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 }
 
