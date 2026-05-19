@@ -80,7 +80,7 @@ export const SceneWhatsApp: React.FC = () => {
             background: "#075e54", color: "white", padding: "60px 18px 14px",
             display: "flex", alignItems: "center", gap: 12, fontFamily: FONT,
           }}>
-            <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#25d366", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🤖</div>
+            <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#25d366", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: "white" }}>AI</div>
             <div>
               <div style={{ fontSize: 22, fontWeight: 700 }}>Conta.AI</div>
               <div style={{ fontSize: 16, opacity: 0.8 }}>online</div>
@@ -88,10 +88,10 @@ export const SceneWhatsApp: React.FC = () => {
           </div>
           <div style={{ position: "relative", height: 880, padding: 0 }}>
             <ChatMsg delay={15} top={20}  me text="Vendi 3 bolos hoje, R$ 180" />
-            <ChatMsg delay={40} top={120} text="✅ Venda registrada! R$ 180,00" />
-            <ChatMsg delay={62} top={240} text="📊 Total do mês: R$ 4.820,00" />
+            <ChatMsg delay={40} top={120} text="✓ Venda registrada — R$ 180,00" />
+            <ChatMsg delay={62} top={240} text="Total do mês: R$ 4.820,00" />
             <ChatMsg delay={82} top={360} me text="Quanto de imposto?" />
-            <ChatMsg delay={105} top={460} text="💸 DAS de Outubro: R$ 75,90 — vence em 5 dias. Quer o PIX?" />
+            <ChatMsg delay={105} top={460} text="DAS de Outubro: R$ 75,90 — vence em 5 dias. Quer o PIX?" />
           </div>
         </Phone>
       </div>
