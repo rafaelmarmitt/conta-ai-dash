@@ -292,7 +292,7 @@ const Index = () => {
             <p className="text-sm text-primary-foreground/85 mt-1 mb-4">registrando vendas no bot</p>
             <div className="flex gap-1">
               {[...Array(7)].map((_, i) => (
-                <div key={i} className={`h-2 flex-1 rounded-full ${i < 5 ? "bg-primary-foreground" : "bg-primary-foreground/30"}`} />
+                <div key={i} className={`h-2 flex-1 rounded-full ${i < 5 ? "bg-foreground dark:bg-primary-foreground" : "bg-foreground/30 dark:bg-primary-foreground/30"}`} />
               ))}
             </div>
           </div>
