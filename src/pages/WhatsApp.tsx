@@ -113,23 +113,16 @@ const WhatsAppPage = () => {
                 <div className="space-y-2">
                   <Label htmlFor="phone">WhatsApp</Label>
                   <div className="flex gap-2">
-                    <Input id="phone" defaultValue="(11) 98765-4321" />
-                    <CopyButton text="+5511987654321" variant="outline" />
+                    <Input
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(maskPhone(e.target.value))}
+                      placeholder="(11) 98765-4321"
+                      inputMode="numeric"
+                      maxLength={15}
+                    />
+                    <CopyButton text={`+55${phone.replace(/\D/g, "")}`} variant="outline" />
                   </div>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
-                  <div>
-                    <p className="text-sm font-semibold">Respostas automáticas</p>
-                    <p className="text-xs text-muted-foreground">Bot responde 24/7 mesmo offline</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
-                  <div>
-                    <p className="text-sm font-semibold">Notificações por venda</p>
-                    <p className="text-xs text-muted-foreground">Receber resumo a cada nova entrada</p>
-                  </div>
-                  <Switch defaultChecked />
                 </div>
                 <Button variant="success" onClick={() => toast.success("Número atualizado com sucesso!")}>
                   Salvar alterações
