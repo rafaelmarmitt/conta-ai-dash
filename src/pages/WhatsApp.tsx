@@ -44,8 +44,16 @@ const atividade24h = [
 
 const cats = ["Todos", "Financeiro", "Consulta", "Impostos", "Clientes", "Catálogo", "Lembretes"];
 
+const maskPhone = (v: string) => {
+  const d = v.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : "";
+  if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+};
+
 const WhatsAppPage = () => {
   const [filtro, setFiltro] = useState("Todos");
+  const [phone, setPhone] = useState("(11) 98765-4321");
   const filtrados = filtro === "Todos" ? comandos : comandos.filter((c) => c.cat === filtro);
 
   return (
@@ -113,23 +121,16 @@ const WhatsAppPage = () => {
                 <div className="space-y-2">
                   <Label htmlFor="phone">WhatsApp</Label>
                   <div className="flex gap-2">
-                    <Input id="phone" defaultValue="(11) 98765-4321" />
-                    <CopyButton text="+5511987654321" variant="outline" />
+                    <Input
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(maskPhone(e.target.value))}
+                      placeholder="(11) 98765-4321"
+                      inputMode="numeric"
+                      maxLength={15}
+                    />
+                    <CopyButton text={`+55${phone.replace(/\D/g, "")}`} variant="outline" />
                   </div>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
-                  <div>
-                    <p className="text-sm font-semibold">Respostas automáticas</p>
-                    <p className="text-xs text-muted-foreground">Bot responde 24/7 mesmo offline</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
-                  <div>
-                    <p className="text-sm font-semibold">Notificações por venda</p>
-                    <p className="text-xs text-muted-foreground">Receber resumo a cada nova entrada</p>
-                  </div>
-                  <Switch defaultChecked />
                 </div>
                 <Button variant="success" onClick={() => toast.success("Número atualizado com sucesso!")}>
                   Salvar alterações
