@@ -44,8 +44,16 @@ const atividade24h = [
 
 const cats = ["Todos", "Financeiro", "Consulta", "Impostos", "Clientes", "Catálogo", "Lembretes"];
 
+const maskPhone = (v: string) => {
+  const d = v.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : "";
+  if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+};
+
 const WhatsAppPage = () => {
   const [filtro, setFiltro] = useState("Todos");
+  const [phone, setPhone] = useState("(11) 98765-4321");
   const filtrados = filtro === "Todos" ? comandos : comandos.filter((c) => c.cat === filtro);
 
   return (
