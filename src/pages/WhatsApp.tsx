@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Seo } from "@/components/Seo";
 import { CopyButton } from "@/components/CopyButton";
@@ -8,295 +9,456 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import {
-  MessageCircle, Activity,
-  Send, MessageSquareText, Bot, Clock, Check, CheckCheck
+  Activity,
+  Bot,
+  CheckCheck,
+  Clock,
+  MessageCircle,
+  MessageSquareText,
+  RefreshCw,
+  Save,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
 } from "recharts";
 
-const comandos = [
-  { cmd: "vendi 150 bolo", desc: "Registra uma entrada (venda) de R$ 150", cat: "Financeiro" },
-  { cmd: "gastei 80 fornecedor", desc: "Registra uma saída (despesa)", cat: "Financeiro" },
-  { cmd: "saldo", desc: "Mostra o saldo do mês atual", cat: "Consulta" },
-  { cmd: "relatório", desc: "Recebe o resumo financeiro semanal", cat: "Consulta" },
-  { cmd: "das", desc: "Consulta status do imposto DAS", cat: "Impostos" },
-  { cmd: "novo cliente João 11999", desc: "Adiciona cliente ao CRM", cat: "Clientes" },
-  { cmd: "produto bolo 180", desc: "Cadastra novo produto no catálogo", cat: "Catálogo" },
-  { cmd: "lembrar pagamento amanhã", desc: "Cria um lembrete automático", cat: "Lembretes" },
-];
-
-const conversa = [
-  { from: "user", text: "vendi 180 bolo decorado pra Maria", time: "14:32" },
-  { from: "bot", text: "✅ Venda registrada!\n\n💰 R$ 180,00\n🎂 Bolo decorado\n👤 Cliente: Maria\n\nSeu saldo do mês: R$ 7.300,00", time: "14:32" },
-  { from: "user", text: "saldo", time: "14:35" },
-  { from: "bot", text: "📊 Resumo de Junho/2025\n\n💚 Entradas: R$ 7.300,00\n💸 Saídas: R$ 3.400,00\n🏆 Lucro: R$ 3.900,00\n\nVocê está 91% da meta! 🚀", time: "14:35" },
-];
-
-const atividade24h = [
-  { h: "00h", msgs: 0 }, { h: "04h", msgs: 0 }, { h: "08h", msgs: 4 },
-  { h: "10h", msgs: 12 }, { h: "12h", msgs: 18 }, { h: "14h", msgs: 24 },
-  { h: "16h", msgs: 16 }, { h: "18h", msgs: 9 }, { h: "20h", msgs: 6 }, { h: "22h", msgs: 2 },
-];
-
-const cats = ["Todos", "Financeiro", "Consulta", "Impostos", "Clientes", "Catálogo", "Lembretes"];
-
-const maskPhone = (v: string) => {
-  const d = v.replace(/\D/g, "").slice(0, 11);
-  if (d.length <= 2) return d.length ? `(${d}` : "";
-  if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
-  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+type ProfileRow = {
+  phone: string | null;
+  whatsapp_phone_number_id: string | null;
+  whatsapp_business_account_id: string | null;
+  whatsapp_connected_at: string | null;
+  whatsapp_bot_enabled: boolean;
 };
 
+type WhatsAppMessage = {
+  id: string;
+  direction: "inbound" | "outbound";
+  message_type: string;
+  body: string | null;
+  status: string | null;
+  ai_intent: string | null;
+  created_at: string;
+};
+
+const comandos = [
+  { cmd: "vendi 150 bolo no pix", desc: "Registra uma venda paga via Pix", cat: "Financeiro" },
+  { cmd: "gastei 80 com fornecedor", desc: "Registra uma despesa", cat: "Financeiro" },
+  { cmd: "agenda corte para sexta 14h", desc: "Cria um atendimento na agenda", cat: "Agenda" },
+  { cmd: "produto bolo 180", desc: "Cadastra produto ou servico", cat: "Catalogo" },
+  { cmd: "das maio 76,90 vencimento dia 20", desc: "Atualiza o DAS do mes", cat: "Impostos" },
+  { cmd: "quanto vendi hoje?", desc: "Consulta dados do dashboard", cat: "Consulta" },
+];
+
+const cats = ["Todos", "Financeiro", "Agenda", "Catalogo", "Impostos", "Consulta"];
+
+const workflowUrl = "https://rafamitt.app.n8n.cloud/workflow/0F12AceLcSJkehI0";
+
+const maskPhone = (value: string) => {
+  const digits = value.replace(/\D/g, "").slice(0, 13);
+  if (digits.length <= 2) return digits ? `+${digits}` : "";
+  if (digits.length <= 4) return `+${digits.slice(0, 2)} ${digits.slice(2)}`;
+  if (digits.length <= 9) return `+${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4)}`;
+  return `+${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 9)}-${digits.slice(9)}`;
+};
+
+const onlyDigits = (value: string) => value.replace(/\D/g, "");
+
+const formatTime = (value: string) =>
+  new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+
 const WhatsAppPage = () => {
+  const { user } = useAuth();
   const [filtro, setFiltro] = useState("Todos");
-  const [phone, setPhone] = useState("(11) 98765-4321");
-  const filtrados = filtro === "Todos" ? comandos : comandos.filter((c) => c.cat === filtro);
+  const [profile, setProfile] = useState<ProfileRow | null>(null);
+  const [phone, setPhone] = useState("");
+  const [phoneNumberId, setPhoneNumberId] = useState("");
+  const [businessAccountId, setBusinessAccountId] = useState("");
+  const [botEnabled, setBotEnabled] = useState(true);
+  const [messages, setMessages] = useState<WhatsAppMessage[]>([]);
+  const [activity, setActivity] = useState<{ h: string; msgs: number }[]>([]);
+  const [messagesToday, setMessagesToday] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const connected = Boolean(profile?.whatsapp_phone_number_id);
+  const lastMessage = messages[0]?.created_at;
+  const filtrados = filtro === "Todos" ? comandos : comandos.filter((command) => command.cat === filtro);
+
+  const statusLabel = useMemo(() => {
+    if (!connected) return "Pendente";
+    return botEnabled ? "Conectado" : "Pausado";
+  }, [botEnabled, connected]);
+
+  const fetchConnection = useCallback(async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("phone, whatsapp_phone_number_id, whatsapp_business_account_id, whatsapp_connected_at, whatsapp_bot_enabled")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      toast.error("Nao foi possivel carregar a conexao do WhatsApp.");
+      return;
+    }
+
+    const nextProfile = data as ProfileRow | null;
+    setProfile(nextProfile);
+    setPhone(maskPhone(nextProfile?.phone ?? ""));
+    setPhoneNumberId(nextProfile?.whatsapp_phone_number_id ?? "");
+    setBusinessAccountId(nextProfile?.whatsapp_business_account_id ?? "");
+    setBotEnabled(nextProfile?.whatsapp_bot_enabled ?? true);
+  }, [user]);
+
+  const fetchMessages = useCallback(async () => {
+    if (!user) return;
+
+    const dayStart = new Date();
+    dayStart.setHours(0, 0, 0, 0);
+    const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const [{ data: recent }, { count }, { data: chartRows }] = await Promise.all([
+      supabase
+        .from("whatsapp_messages")
+        .select("id, direction, message_type, body, status, ai_intent, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(8),
+      supabase
+        .from("whatsapp_messages")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .gte("created_at", dayStart.toISOString()),
+      supabase
+        .from("whatsapp_messages")
+        .select("created_at")
+        .eq("user_id", user.id)
+        .gte("created_at", last24h.toISOString()),
+    ]);
+
+    setMessages((recent ?? []) as WhatsAppMessage[]);
+    setMessagesToday(count ?? 0);
+
+    const buckets = new Map<string, number>();
+    for (let index = 23; index >= 0; index -= 1) {
+      const hour = new Date(Date.now() - index * 60 * 60 * 1000);
+      buckets.set(`${hour.getHours().toString().padStart(2, "0")}h`, 0);
+    }
+
+    (chartRows ?? []).forEach((row) => {
+      const hour = `${new Date(row.created_at).getHours().toString().padStart(2, "0")}h`;
+      buckets.set(hour, (buckets.get(hour) ?? 0) + 1);
+    });
+
+    setActivity(Array.from(buckets, ([h, msgs]) => ({ h, msgs })));
+  }, [user]);
+
+  const refreshAll = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    await Promise.all([fetchConnection(), fetchMessages()]);
+    setLoading(false);
+  }, [fetchConnection, fetchMessages, user]);
+
+  useEffect(() => {
+    refreshAll();
+  }, [refreshAll]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const profileChannel = supabase
+      .channel(`profiles-whatsapp-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles", filter: `user_id=eq.${user.id}` },
+        () => fetchConnection()
+      )
+      .subscribe();
+
+    const messagesChannel = supabase
+      .channel(`whatsapp-messages-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "whatsapp_messages", filter: `user_id=eq.${user.id}` },
+        () => fetchMessages()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(profileChannel);
+      supabase.removeChannel(messagesChannel);
+    };
+  }, [fetchConnection, fetchMessages, user]);
+
+  const saveConnection = async () => {
+    if (!user) return;
+    setSaving(true);
+
+    const normalizedPhone = onlyDigits(phone);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        phone: normalizedPhone || null,
+        whatsapp_phone_number_id: phoneNumberId.trim() || null,
+        whatsapp_business_account_id: businessAccountId.trim() || null,
+        whatsapp_bot_enabled: botEnabled,
+        whatsapp_connected_at: phoneNumberId.trim() ? new Date().toISOString() : null,
+      })
+      .eq("user_id", user.id);
+
+    setSaving(false);
+
+    if (error) {
+      toast.error("Nao foi possivel salvar a conexao.");
+      return;
+    }
+
+    toast.success("Conexao do WhatsApp salva.");
+    refreshAll();
+  };
 
   return (
     <>
-      <Seo title="WhatsApp & Conexão · Conta.AI" description="Conecte seu WhatsApp ao Conta.AI e gerencie seu MEI conversando com o bot: vendas, despesas, clientes e mais." path="/whatsapp" />
-    <DashboardLayout
-      title="WhatsApp & Conexão"
-      subtitle="Gerencie seu bot e veja a integração em tempo real"
-      actions={
-        <Button variant="success" className="rounded-xl" onClick={() => toast.success("Mensagem de teste enviada!")}>
-          <Send className="h-4 w-4" /> Enviar teste
-        </Button>
-      }
-    >
-      {/* Status cards */}
-      <div className="grid gap-4 md:grid-cols-3 mb-6">
-        <Card className="p-5 shadow-card border-success/30 bg-success-soft/40 relative overflow-hidden">
-          <div className="absolute top-3 right-3 flex items-center justify-center h-10 w-10 rounded-full">
-            <span className="absolute inline-flex h-3 w-3 rounded-full bg-success animate-pulse-ring" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-success" />
+      <Seo
+        title="WhatsApp & Conexao · Conta.AI"
+        description="Conecte seu WhatsApp ao Conta.AI e acompanhe vendas, despesas, agenda e impostos em tempo real."
+        path="/whatsapp"
+      />
+      <DashboardLayout
+        title="WhatsApp & Conexao"
+        subtitle="Vincule a Meta API ao workflow visual do n8n e acompanhe o processamento em tempo real"
+        actions={
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="rounded-xl" onClick={refreshAll} disabled={loading}>
+              <RefreshCw className="h-4 w-4" /> Atualizar
+            </Button>
+            <Button variant="success" className="rounded-xl" onClick={saveConnection} disabled={saving}>
+              <Save className="h-4 w-4" /> Salvar conexao
+            </Button>
           </div>
-          <p className="text-xs font-bold uppercase text-success-deep tracking-wider">Status do Bot</p>
-          <p className="text-2xl font-extrabold text-success-deep mt-1">Conectado</p>
-          <p className="text-xs text-muted-foreground mt-1">Última sync: agora</p>
-        </Card>
-        <Card className="p-5 shadow-card hover-lift">
-          <Activity className="h-5 w-5 text-info mb-2" />
-          <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Mensagens hoje</p>
-          <p className="text-2xl font-extrabold mt-1">91</p>
-          <p className="text-xs text-success-deep font-semibold mt-1">+12% vs ontem</p>
-        </Card>
-        <Card className="p-5 shadow-card hover-lift">
-          <Clock className="h-5 w-5 text-coral mb-2" />
-          <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Tempo médio</p>
-          <p className="text-2xl font-extrabold mt-1">1.2s</p>
-          <p className="text-xs text-muted-foreground mt-1">resposta do bot</p>
-        </Card>
-      </div>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-3 mb-6">
+          <Card className={`p-5 shadow-card relative overflow-hidden ${connected ? "border-success/30 bg-success-soft/40" : "border-warning/30"}`}>
+            <div className="absolute top-3 right-3 flex items-center justify-center h-10 w-10 rounded-full">
+              <span className={`relative inline-flex h-3 w-3 rounded-full ${connected && botEnabled ? "bg-success animate-pulse" : "bg-muted-foreground"}`} />
+            </div>
+            <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Status do bot</p>
+            <p className="text-2xl font-extrabold mt-1">{statusLabel}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {lastMessage ? `Ultima mensagem: ${formatTime(lastMessage)}` : "Aguardando primeira mensagem"}
+            </p>
+          </Card>
+          <Card className="p-5 shadow-card hover-lift">
+            <Activity className="h-5 w-5 text-info mb-2" />
+            <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Mensagens hoje</p>
+            <p className="text-2xl font-extrabold mt-1">{messagesToday}</p>
+            <p className="text-xs text-muted-foreground mt-1">Entrada e saida pelo WhatsApp</p>
+          </Card>
+          <Card className="p-5 shadow-card hover-lift">
+            <Clock className="h-5 w-5 text-coral mb-2" />
+            <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Workflow n8n</p>
+            <p className="text-sm font-bold mt-2 truncate">Conta.AI WhatsApp Visual</p>
+            <a className="text-xs text-primary font-semibold hover:underline" href={workflowUrl} target="_blank" rel="noreferrer">
+              Abrir workflow
+            </a>
+          </Card>
+        </div>
 
-      <Tabs defaultValue="conexao" className="w-full">
-        <TabsList className="mb-5 bg-card border border-border p-1 rounded-xl">
-          <TabsTrigger value="conexao" className="rounded-lg data-[state=active]:gradient-primary data-[state=active]:text-primary-foreground">Conexão</TabsTrigger>
-          <TabsTrigger value="conversa" className="rounded-lg data-[state=active]:gradient-primary data-[state=active]:text-primary-foreground">Preview do bot</TabsTrigger>
-          <TabsTrigger value="comandos" className="rounded-lg data-[state=active]:gradient-primary data-[state=active]:text-primary-foreground">Comandos</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="conexao" className="w-full">
+          <TabsList className="mb-5 bg-card border border-border p-1 rounded-xl">
+            <TabsTrigger value="conexao" className="rounded-lg data-[state=active]:gradient-primary data-[state=active]:text-primary-foreground">Conexao</TabsTrigger>
+            <TabsTrigger value="conversa" className="rounded-lg data-[state=active]:gradient-primary data-[state=active]:text-primary-foreground">Mensagens</TabsTrigger>
+            <TabsTrigger value="comandos" className="rounded-lg data-[state=active]:gradient-primary data-[state=active]:text-primary-foreground">Comandos</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="conexao" className="mt-0">
-          <div className="grid gap-5 lg:grid-cols-3">
-            <Card className="p-6 shadow-card lg:col-span-2">
-              <div className="flex items-start gap-3 mb-5">
-                <div className="h-11 w-11 rounded-2xl gradient-primary flex items-center justify-center shadow-glow">
-                  <Bot className="h-5 w-5 text-primary-foreground" />
+          <TabsContent value="conexao" className="mt-0">
+            <div className="grid gap-5 lg:grid-cols-3">
+              <Card className="p-6 shadow-card lg:col-span-2">
+                <div className="flex items-start gap-3 mb-5">
+                  <div className="h-11 w-11 rounded-2xl gradient-primary flex items-center justify-center shadow-glow">
+                    <Bot className="h-5 w-5 text-primary-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-base font-bold">Vinculo Meta WhatsApp</h2>
+                    <p className="text-xs text-muted-foreground">O n8n usa o Phone Number ID para localizar o perfil certo no Supabase.</p>
+                  </div>
+                  <Badge className={connected ? "bg-success-soft text-success-deep border-0" : ""} variant={connected ? "default" : "outline"}>
+                    {connected ? "Vinculado" : "Pendente"}
+                  </Badge>
                 </div>
-                <div className="flex-1">
-                  <h2 className="text-base font-bold">Número Cadastrado</h2>
-                  <p className="text-xs text-muted-foreground">O bot responde mensagens enviadas para este número</p>
-                </div>
-                <Badge className="bg-success-soft text-success-deep border-0">Verificado ✓</Badge>
-              </div>
-              <div className="space-y-4 max-w-md">
-                <div className="space-y-2">
-                  <Label htmlFor="ddi">País</Label>
-                  <Input id="ddi" defaultValue="🇧🇷 +55 (Brasil)" disabled />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">WhatsApp</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="phone"
-                      value={phone}
-                      onChange={(e) => setPhone(maskPhone(e.target.value))}
-                      placeholder="(11) 98765-4321"
-                      inputMode="numeric"
-                      maxLength={15}
-                    />
-                    <CopyButton text={`+55${phone.replace(/\D/g, "")}`} variant="outline" />
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">WhatsApp publico</Label>
+                    <Input id="phone" value={phone} onChange={(event) => setPhone(maskPhone(event.target.value))} placeholder="+55 11 98765-4321" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumberId">Phone Number ID da Meta</Label>
+                    <Input id="phoneNumberId" value={phoneNumberId} onChange={(event) => setPhoneNumberId(event.target.value)} placeholder="123456789000000" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="businessAccountId">WhatsApp Business Account ID</Label>
+                    <Input id="businessAccountId" value={businessAccountId} onChange={(event) => setBusinessAccountId(event.target.value)} placeholder="987654321000000" />
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
+                    <div>
+                      <Label htmlFor="botEnabled">Bot ativo</Label>
+                      <p className="text-xs text-muted-foreground">Pausar impede novas respostas automaticas.</p>
+                    </div>
+                    <Switch id="botEnabled" checked={botEnabled} onCheckedChange={setBotEnabled} />
                   </div>
                 </div>
-                <Button variant="success" onClick={() => toast.success("Número atualizado com sucesso!")}>
-                  Salvar alterações
-                </Button>
-              </div>
-            </Card>
 
-            <Card className="p-5 shadow-card">
-              <h3 className="text-sm font-bold mb-1">Atividade nas últimas 24h</h3>
-              <p className="text-xs text-muted-foreground mb-4">Mensagens processadas pelo bot</p>
-              <div className="h-56 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={atividade24h} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="lineG" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="hsl(var(--primary))" />
-                        <stop offset="100%" stopColor="hsl(var(--success))" />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="h" fontSize={11} stroke="hsl(var(--muted-foreground))" />
-                    <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px" }} />
-                    <Line type="monotone" dataKey="msgs" stroke="url(#lineG)" strokeWidth={3} dot={{ fill: "hsl(var(--primary))", r: 4 }} activeDot={{ r: 6 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-          </div>
-        </TabsContent>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <Button variant="success" onClick={saveConnection} disabled={saving}>
+                    <Save className="h-4 w-4" /> Salvar alteracoes
+                  </Button>
+                  <CopyButton text={phoneNumberId} variant="outline" />
+                </div>
+              </Card>
 
-        <TabsContent value="conversa" className="mt-0">
-          <div className="grid gap-5 lg:grid-cols-3">
-            <Card className="p-0 shadow-card lg:col-span-2 overflow-hidden">
-              <div className="bg-whatsapp text-white px-4 py-3 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                  <Bot className="h-5 w-5" />
+              <Card className="p-5 shadow-card">
+                <h3 className="text-sm font-bold mb-1">Atividade nas ultimas 24h</h3>
+                <p className="text-xs text-muted-foreground mb-4">Atualiza quando o n8n grava no Supabase</p>
+                <div className="h-56 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={activity} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis dataKey="h" fontSize={11} stroke="hsl(var(--muted-foreground))" minTickGap={18} />
+                      <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                      <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px" }} />
+                      <Line type="monotone" dataKey="msgs" stroke="hsl(var(--primary))" strokeWidth={3} dot={false} activeDot={{ r: 5 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
-                <div className="flex-1">
-                  <p className="font-bold text-sm">Conta.AI Bot</p>
-                  <p className="text-[11px] opacity-90 flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-                    online — digitando...
-                  </p>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="conversa" className="mt-0">
+            <div className="grid gap-5 lg:grid-cols-3">
+              <Card className="p-0 shadow-card lg:col-span-2 overflow-hidden">
+                <div className="bg-whatsapp text-white px-4 py-3 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <Bot className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-sm">Conta.AI Bot</p>
+                    <p className="text-[11px] opacity-90 flex items-center gap-1">
+                      <span className={`h-1.5 w-1.5 rounded-full ${connected && botEnabled ? "bg-success animate-pulse" : "bg-white/60"}`} />
+                      {connected && botEnabled ? "online" : "aguardando conexao"}
+                    </p>
+                  </div>
+                  <Badge className="bg-white/20 text-white border-0 text-[10px]">Realtime</Badge>
                 </div>
-                <Badge className="bg-white/20 text-white border-0 text-[10px]">Mock</Badge>
-              </div>
-              <div
-                className="p-5 space-y-3 min-h-[420px] max-h-[500px] overflow-y-auto scrollbar-thin"
-                style={{
-                  backgroundImage: `radial-gradient(hsl(var(--whatsapp) / 0.06) 1px, transparent 1px)`,
-                  backgroundSize: "20px 20px",
-                  backgroundColor: "hsl(var(--whatsapp-soft) / 0.3)",
-                }}
-              >
-                {conversa.map((m, i) => (
-                  <div
-                    key={i}
-                    className={`flex ${m.from === "user" ? "justify-end" : "justify-start"} animate-fade-in group`}
-                    style={{ animationDelay: `${i * 100}ms` }}
-                  >
-                    <div className="max-w-[80%] relative">
-                      <div
-                        className={`relative px-3.5 py-2.5 rounded-2xl shadow-soft ${
-                          m.from === "user"
-                            ? "bg-success text-success-foreground rounded-tr-sm"
-                            : "bg-card text-foreground rounded-tl-sm"
-                        }`}
-                      >
-                        <p className="text-sm whitespace-pre-line leading-relaxed">{m.text}</p>
-                        <div className={`flex items-center gap-1 justify-end mt-1 text-[10px] ${m.from === "user" ? "text-success-foreground/70" : "text-muted-foreground"}`}>
-                          <span>{m.time}</span>
-                          {m.from === "user" && <CheckCheck className="h-3 w-3" />}
+                <div
+                  className="p-5 space-y-3 min-h-[420px] max-h-[500px] overflow-y-auto scrollbar-thin"
+                  style={{
+                    backgroundImage: `radial-gradient(hsl(var(--whatsapp) / 0.06) 1px, transparent 1px)`,
+                    backgroundSize: "20px 20px",
+                    backgroundColor: "hsl(var(--whatsapp-soft) / 0.3)",
+                  }}
+                >
+                  {messages.length === 0 ? (
+                    <div className="h-full min-h-[360px] flex items-center justify-center text-center text-sm text-muted-foreground">
+                      Nenhuma mensagem processada ainda.
+                    </div>
+                  ) : (
+                    [...messages].reverse().map((message) => (
+                      <div key={message.id} className={`flex ${message.direction === "inbound" ? "justify-end" : "justify-start"} animate-fade-in group`}>
+                        <div className="max-w-[80%] relative">
+                          <div
+                            className={`relative px-3.5 py-2.5 rounded-2xl shadow-soft ${
+                              message.direction === "inbound"
+                                ? "bg-success text-success-foreground rounded-tr-sm"
+                                : "bg-card text-foreground rounded-tl-sm"
+                            }`}
+                          >
+                            <p className="text-sm whitespace-pre-line leading-relaxed">{message.body || `[${message.message_type}]`}</p>
+                            <div className={`flex items-center gap-1 justify-end mt-1 text-[10px] ${message.direction === "inbound" ? "text-success-foreground/70" : "text-muted-foreground"}`}>
+                              <span>{formatTime(message.created_at)}</span>
+                              {message.direction === "inbound" && <CheckCheck className="h-3 w-3" />}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className={`absolute -top-2 ${m.from === "user" ? "-left-9" : "-right-9"} opacity-0 group-hover:opacity-100 transition-smooth`}>
-                        <CopyButton text={m.text} size="icon" variant="secondary" className="h-7 w-7 rounded-full" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="p-3 bg-card border-t border-border flex items-center gap-2">
-                <Input placeholder="Simular mensagem do cliente..." className="rounded-full bg-muted/50 border-0" />
-                <Button size="icon" className="rounded-full gradient-primary text-primary-foreground border-0" onClick={() => toast("Simulação enviada!")}>
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </Card>
-
-            <Card className="p-5 shadow-card">
-              <div className="flex items-center gap-2 mb-4">
-                <MessageSquareText className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-bold">Mensagens prontas</h3>
-              </div>
-              <p className="text-xs text-muted-foreground mb-4">Copie e envie para seus clientes</p>
-              <div className="space-y-3">
-                {[
-                  { label: "Pedido confirmado", text: "Olá! ✨ Seu pedido foi confirmado e entrará em produção. Em breve te aviso quando estiver pronto. Obrigada pela preferência! 🎂" },
-                  { label: "Pagamento Pix", text: "💚 Para finalizar, faça o Pix para a chave: maria@docesdamaria.com.br no valor combinado. Me envia o comprovante quando pagar! 🙏" },
-                  { label: "Pedido pronto", text: "🎉 Boa notícia! Seu pedido está pronto para retirada/entrega. Posso te enviar agora?" },
-                  { label: "Agradecimento", text: "Muito obrigada pela compra! ❤️ Se gostou, deixe sua avaliação e indique para os amigos. Volte sempre! 🍰" },
-                ].map((m) => (
-                  <div key={m.label} className="p-3 rounded-xl border border-border bg-muted/30 hover:bg-muted/60 transition-smooth">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="text-xs font-bold text-primary">{m.label}</span>
-                      <CopyButton text={m.text} size="sm" variant="ghost" className="h-6 w-6" />
-                    </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{m.text}</p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="comandos" className="mt-0">
-          <Card className="p-6 shadow-card">
-            <div className="flex items-start gap-3 mb-5 flex-wrap">
-              <div className="h-11 w-11 rounded-2xl gradient-success flex items-center justify-center shadow-success shrink-0">
-                <MessageCircle className="h-5 w-5 text-success-foreground" />
-              </div>
-              <div className="flex-1 min-w-[200px]">
-                <h2 className="text-base font-bold">Guia rápido de comandos</h2>
-                <p className="text-xs text-muted-foreground">Toque no botão para copiar o comando e colar no WhatsApp</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2 mb-5">
-              {cats.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setFiltro(c)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-bounce ${
-                    filtro === c
-                      ? "gradient-primary text-primary-foreground shadow-soft"
-                      : "bg-muted text-muted-foreground hover:bg-muted/70"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              {filtrados.map((c, i) => (
-                <div
-                  key={c.cmd}
-                  className="group flex items-start gap-3 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-glow transition-smooth animate-fade-in"
-                  style={{ animationDelay: `${i * 40}ms` }}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                      <code className="px-2 py-1 rounded-lg bg-primary text-primary-foreground font-mono text-xs font-bold">
-                        {c.cmd}
-                      </code>
-                      <Badge variant="outline" className="text-[10px]">{c.cat}</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{c.desc}</p>
-                  </div>
-                  <CopyButton text={c.cmd} className="opacity-60 group-hover:opacity-100 shrink-0" />
+                    ))
+                  )}
                 </div>
-              ))}
+              </Card>
+
+              <Card className="p-5 shadow-card">
+                <div className="flex items-center gap-2 mb-4">
+                  <MessageSquareText className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-bold">Arquitetura ativa</h3>
+                </div>
+                <div className="space-y-3 text-xs text-muted-foreground">
+                  <p>WhatsApp Trigger nativo recebe mensagens da Meta API.</p>
+                  <p>Switch separa texto, audio, imagem e fallback.</p>
+                  <p>OpenAI transcreve audio e interpreta imagem antes do Agent.</p>
+                  <p>Wait + Aggregate juntam mensagens enviadas em sequencia.</p>
+                  <p>Supabase grava vendas, despesas, agenda, produtos, DAS e historico.</p>
+                </div>
+              </Card>
             </div>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </DashboardLayout>
+          </TabsContent>
+
+          <TabsContent value="comandos" className="mt-0">
+            <Card className="p-6 shadow-card">
+              <div className="flex items-start gap-3 mb-5 flex-wrap">
+                <div className="h-11 w-11 rounded-2xl gradient-success flex items-center justify-center shadow-success shrink-0">
+                  <MessageCircle className="h-5 w-5 text-success-foreground" />
+                </div>
+                <div className="flex-1 min-w-[200px]">
+                  <h2 className="text-base font-bold">Comandos de teste</h2>
+                  <p className="text-xs text-muted-foreground">Envie frases naturais no WhatsApp; o Agent classifica a intencao.</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 mb-5">
+                {cats.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setFiltro(cat)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-bounce ${
+                      filtro === cat ? "gradient-primary text-primary-foreground shadow-soft" : "bg-muted text-muted-foreground hover:bg-muted/70"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {filtrados.map((command) => (
+                  <div key={command.cmd} className="group flex items-start gap-3 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-glow transition-smooth">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <code className="px-2 py-1 rounded-lg bg-primary text-primary-foreground font-mono text-xs font-bold">{command.cmd}</code>
+                        <Badge variant="outline" className="text-[10px]">{command.cat}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{command.desc}</p>
+                    </div>
+                    <CopyButton text={command.cmd} className="opacity-60 group-hover:opacity-100 shrink-0" />
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </DashboardLayout>
     </>
   );
 };

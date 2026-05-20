@@ -256,6 +256,10 @@ export type Database = {
           updated_at: string
           user_id: string
           welcome_tour_completed: boolean
+          whatsapp_bot_enabled: boolean
+          whatsapp_business_account_id: string | null
+          whatsapp_connected_at: string | null
+          whatsapp_phone_number_id: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -271,6 +275,10 @@ export type Database = {
           updated_at?: string
           user_id: string
           welcome_tour_completed?: boolean
+          whatsapp_bot_enabled?: boolean
+          whatsapp_business_account_id?: string | null
+          whatsapp_connected_at?: string | null
+          whatsapp_phone_number_id?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -286,6 +294,10 @@ export type Database = {
           updated_at?: string
           user_id?: string
           welcome_tour_completed?: boolean
+          whatsapp_bot_enabled?: boolean
+          whatsapp_business_account_id?: string | null
+          whatsapp_connected_at?: string | null
+          whatsapp_phone_number_id?: string | null
         }
         Relationships: []
       }
@@ -425,6 +437,115 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      whatsapp_messages: {
+        Row: {
+          ai_intent: string | null
+          ai_payload: Json
+          body: string | null
+          created_at: string
+          customer_id: string | null
+          direction: string
+          id: string
+          media_url: string | null
+          message_type: string
+          phone_number: string
+          raw_payload: Json
+          status: string
+          user_id: string
+          whatsapp_message_id: string | null
+        }
+        Insert: {
+          ai_intent?: string | null
+          ai_payload?: Json
+          body?: string | null
+          created_at?: string
+          customer_id?: string | null
+          direction: string
+          id?: string
+          media_url?: string | null
+          message_type?: string
+          phone_number: string
+          raw_payload?: Json
+          status?: string
+          user_id: string
+          whatsapp_message_id?: string | null
+        }
+        Update: {
+          ai_intent?: string | null
+          ai_payload?: Json
+          body?: string | null
+          created_at?: string
+          customer_id?: string | null
+          direction?: string
+          id?: string
+          media_url?: string | null
+          message_type?: string
+          phone_number?: string
+          raw_payload?: Json
+          status?: string
+          user_id?: string
+          whatsapp_message_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_messages_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      followups: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          description: string | null
+          due_at: string | null
+          id: string
+          metadata: Json
+          source: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          metadata?: Json
+          source?: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          metadata?: Json
+          source?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followups_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
