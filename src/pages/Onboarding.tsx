@@ -69,10 +69,6 @@ const STEPS = [
   { id: 5, label: "Pronto!", icon: PartyPopper },
 ] as const;
 
-const onboardingWebhookUrl =
-  import.meta.env.VITE_N8N_ONBOARDING_WEBHOOK_URL ??
-  "https://rafamitt.app.n8n.cloud/webhook/conta-ai/zapi/onboarding";
-
 const normalizeWhatsAppPhone = (value: string) => {
   const digits = value.replace(/\D/g, "");
   if (!digits) return "";
@@ -81,18 +77,14 @@ const normalizeWhatsAppPhone = (value: string) => {
   return digits;
 };
 
-const triggerOnboardingWebhook = async (userId: string, phoneNumber: string) => {
-  if (!onboardingWebhookUrl || !phoneNumber) return;
+const triggerOnboardingWebhook = async (phoneNumber: string) => {
+  if (!phoneNumber) return;
 
-  const response = await fetch(onboardingWebhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, phone: phoneNumber, source: "dashboard-onboarding" }),
+  const { error } = await supabase.functions.invoke("n8n-bridge", {
+    body: { action: "trigger_onboarding", phone: phoneNumber, source: "dashboard-onboarding" },
   });
 
-  if (!response.ok) {
-    throw new Error("Webhook de onboarding retornou erro.");
-  }
+  if (error) throw error;
 };
 
 export default function Onboarding() {
@@ -236,7 +228,7 @@ export default function Onboarding() {
 
       if (normalizedPhone) {
         try {
-          await triggerOnboardingWebhook(user.id, normalizedPhone);
+          await triggerOnboardingWebhook(normalizedPhone);
         } catch (webhookError) {
           console.warn("Falha ao disparar onboarding do WhatsApp", webhookError);
           toast.warning("Perfil salvo, mas nao consegui disparar o tutorial do WhatsApp automaticamente.");

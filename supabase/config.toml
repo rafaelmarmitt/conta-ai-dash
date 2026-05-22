@@ -2,3 +2,6 @@ project_id = "ebxcoqglhmlbbjlyelxf"
 
 [functions.admin-broadcast]
 verify_jwt = true
+
+[functions.n8n-bridge]
+verify_jwt = true
