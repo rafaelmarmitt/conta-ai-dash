@@ -62,6 +62,9 @@ const comandos = [
 const cats = ["Todos", "Financeiro", "Agenda", "Catalogo", "Impostos", "Consulta"];
 
 const workflowUrl = "https://rafamitt.app.n8n.cloud/workflow/7YfGKuZqcJfeySm7";
+const onboardingWebhookUrl =
+  import.meta.env.VITE_N8N_ONBOARDING_WEBHOOK_URL ??
+  "https://rafamitt.app.n8n.cloud/webhook/conta-ai/zapi/onboarding";
 
 const maskPhone = (value: string) => {
   const digits = value.replace(/\D/g, "").slice(0, 13);
@@ -72,6 +75,28 @@ const maskPhone = (value: string) => {
 };
 
 const onlyDigits = (value: string) => value.replace(/\D/g, "");
+
+const normalizeWhatsAppPhone = (value: string) => {
+  const digits = onlyDigits(value);
+  if (!digits) return "";
+  if (digits.startsWith("55")) return digits;
+  if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+  return digits;
+};
+
+const triggerOnboardingWebhook = async (userId: string, phoneNumber: string) => {
+  if (!onboardingWebhookUrl || !phoneNumber) return;
+
+  const response = await fetch(onboardingWebhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, phone: phoneNumber, source: "dashboard-whatsapp" }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Webhook de onboarding retornou erro.");
+  }
+};
 
 const formatTime = (value: string) =>
   new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date(value));
@@ -201,7 +226,7 @@ const WhatsAppPage = () => {
     if (!user) return;
     setSaving(true);
 
-    const normalizedPhone = onlyDigits(phone);
+    const normalizedPhone = normalizeWhatsAppPhone(phone);
     const phoneChanged = Boolean(normalizedPhone) && normalizedPhone !== (profile?.phone ?? "");
     const shouldSendOnboarding = Boolean(normalizedPhone) && (phoneChanged || !profile?.whatsapp_onboarding_sent_at);
     const { error } = await supabase
@@ -219,6 +244,15 @@ const WhatsAppPage = () => {
     if (error) {
       toast.error("Nao foi possivel salvar a conexao.");
       return;
+    }
+
+    if (shouldSendOnboarding) {
+      try {
+        await triggerOnboardingWebhook(user.id, normalizedPhone);
+      } catch (webhookError) {
+        console.warn("Falha ao disparar onboarding do WhatsApp", webhookError);
+        toast.warning("Telefone salvo, mas nao consegui disparar o onboarding automaticamente.");
+      }
     }
 
     toast.success(shouldSendOnboarding ? "Telefone vinculado. O bot vai enviar uma mensagem de boas-vindas." : "Telefone do WhatsApp atualizado.");

@@ -69,6 +69,32 @@ const STEPS = [
   { id: 5, label: "Pronto!", icon: PartyPopper },
 ] as const;
 
+const onboardingWebhookUrl =
+  import.meta.env.VITE_N8N_ONBOARDING_WEBHOOK_URL ??
+  "https://rafamitt.app.n8n.cloud/webhook/conta-ai/zapi/onboarding";
+
+const normalizeWhatsAppPhone = (value: string) => {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("55")) return digits;
+  if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+  return digits;
+};
+
+const triggerOnboardingWebhook = async (userId: string, phoneNumber: string) => {
+  if (!onboardingWebhookUrl || !phoneNumber) return;
+
+  const response = await fetch(onboardingWebhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, phone: phoneNumber, source: "dashboard-onboarding" }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Webhook de onboarding retornou erro.");
+  }
+};
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
@@ -190,19 +216,32 @@ export default function Onboarding() {
     if (!user || !businessType) return;
     setLoading(true);
     try {
+      const normalizedPhone = normalizeWhatsAppPhone(phone);
       const { error } = await supabase
         .from("profiles")
         .update({
           business_type: businessType,
           business_name: businessName.trim(),
           cnpj: cnpj || null,
-          phone: phone || null,
+          phone: normalizedPhone || null,
           monthly_goal: Number(monthlyGoal),
           onboarding_completed: true,
+          whatsapp_bot_enabled: Boolean(normalizedPhone),
+          whatsapp_connected_at: normalizedPhone ? new Date().toISOString() : null,
+          whatsapp_onboarding_pending: Boolean(normalizedPhone),
         })
         .eq("user_id", user.id);
 
       if (error) throw error;
+
+      if (normalizedPhone) {
+        try {
+          await triggerOnboardingWebhook(user.id, normalizedPhone);
+        } catch (webhookError) {
+          console.warn("Falha ao disparar onboarding do WhatsApp", webhookError);
+          toast.warning("Perfil salvo, mas nao consegui disparar o tutorial do WhatsApp automaticamente.");
+        }
+      }
 
       await refreshProfile();
       // Move to celebration step (5)
