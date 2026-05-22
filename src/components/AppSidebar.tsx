@@ -1,4 +1,5 @@
-import { LayoutDashboard, MessageCircle, Receipt, BarChart3, Package, Building2, Sparkles, Calendar, ChefHat, Box, LogOut } from "lucide-react";
+import { LayoutDashboard, MessageCircle, Receipt, BarChart3, Package, Building2, Sparkles, Calendar, ChefHat, Box, LogOut, Shield } from "lucide-react";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { NavLink, useLocation } from "react-router-dom";
 import mascot from "@/assets/mascot.png";
 import {
@@ -39,10 +40,12 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { profile, signOut } = useAuth();
+  const { isAdmin } = useIsAdmin();
 
   const config = profile?.business_type ? BUSINESS_CONFIGS[profile.business_type] : null;
   const modules = (config?.modules ?? DEFAULT_MODULES) as ModuleKey[];
   const items = modules.map((m) => ALL_ITEMS[m]).filter(Boolean);
+  const adminItem = { title: "Admin", url: "/admin", icon: Shield, badge: "Sudo" };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -72,7 +75,7 @@ export function AppSidebar() {
         <SidebarGroup className="py-1">
           <SidebarGroupContent>
             <SidebarMenu className="gap-0.5">
-              {items.map((item) => {
+              {[...items, ...(isAdmin ? [adminItem] : [])].map((item) => {
                 const active = location.pathname === item.url;
                 return (
                   <SidebarMenuItem key={item.title}>

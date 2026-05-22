@@ -1,1 +1,4 @@
 project_id = "ebxcoqglhmlbbjlyelxf"
+
+[functions.admin-broadcast]
+verify_jwt = true
