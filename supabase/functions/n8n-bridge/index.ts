@@ -1,6 +1,57 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 type JsonRecord = Record<string, unknown>;
+type BusinessType = "comercio" | "servicos" | "alimentacao" | "beleza" | "outros";
+
+const BUSINESS_POLICIES: Record<BusinessType, {
+  label: string;
+  modules: string[];
+  allowedActions: string[];
+  primaryModule: "estoque" | "agenda" | "cardapio" | "catalogo";
+  inventoryMode: "enabled" | "disabled";
+  appointmentMode: "enabled" | "disabled";
+}> = {
+  comercio: {
+    label: "Comercio / Vendas",
+    modules: ["inicio", "whatsapp", "impostos", "relatorios", "catalogo", "estoque", "perfil"],
+    allowedActions: ["create_sale", "create_expense", "create_product", "upsert_tax", "adjust_inventory"],
+    primaryModule: "estoque",
+    inventoryMode: "enabled",
+    appointmentMode: "disabled",
+  },
+  servicos: {
+    label: "Prestacao de Servicos",
+    modules: ["inicio", "whatsapp", "impostos", "relatorios", "agenda", "catalogo", "perfil"],
+    allowedActions: ["create_sale", "create_expense", "create_appointment", "create_product", "upsert_tax"],
+    primaryModule: "agenda",
+    inventoryMode: "disabled",
+    appointmentMode: "enabled",
+  },
+  alimentacao: {
+    label: "Alimentacao",
+    modules: ["inicio", "whatsapp", "impostos", "relatorios", "cardapio", "estoque", "perfil"],
+    allowedActions: ["create_sale", "create_expense", "create_product", "upsert_tax", "adjust_inventory"],
+    primaryModule: "cardapio",
+    inventoryMode: "enabled",
+    appointmentMode: "disabled",
+  },
+  beleza: {
+    label: "Beleza & Estetica",
+    modules: ["inicio", "whatsapp", "impostos", "relatorios", "agenda", "catalogo", "perfil"],
+    allowedActions: ["create_sale", "create_expense", "create_appointment", "create_product", "upsert_tax"],
+    primaryModule: "agenda",
+    inventoryMode: "disabled",
+    appointmentMode: "enabled",
+  },
+  outros: {
+    label: "Outros",
+    modules: ["inicio", "whatsapp", "impostos", "relatorios", "catalogo", "perfil"],
+    allowedActions: ["create_sale", "create_expense", "create_product", "upsert_tax"],
+    primaryModule: "catalogo",
+    inventoryMode: "disabled",
+    appointmentMode: "disabled",
+  },
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,6 +81,16 @@ const normalizePhone = (value: unknown) => {
 };
 
 const today = () => new Date().toISOString().slice(0, 10);
+
+const asBusinessType = (value: unknown): BusinessType => {
+  const type = asString(value) as BusinessType;
+  return type in BUSINESS_POLICIES ? type : "outros";
+};
+
+const getBusinessPolicy = (type: unknown) => {
+  const businessType = asBusinessType(type);
+  return { businessType, ...BUSINESS_POLICIES[businessType] };
+};
 
 const getEnv = (name: string) => {
   const value = Deno.env.get(name);
@@ -120,12 +181,15 @@ const handleLookupProfileByPhone = async (body: JsonRecord) => {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("profiles")
-    .select("user_id, phone, full_name, business_name, whatsapp_bot_enabled")
+    .select("user_id, phone, full_name, business_name, business_type, whatsapp_bot_enabled")
     .eq("phone", phone)
     .maybeSingle();
 
   if (error) throw error;
-  return json({ profile: data, found: Boolean(data) });
+  return json({
+    profile: data ? { ...data, business_policy: getBusinessPolicy(data.business_type) } : data,
+    found: Boolean(data),
+  });
 };
 
 const handleGetOnboardingProfile = async (body: JsonRecord) => {
@@ -135,13 +199,16 @@ const handleGetOnboardingProfile = async (body: JsonRecord) => {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("profiles")
-    .select("user_id, phone, whatsapp_onboarding_pending")
+    .select("user_id, phone, business_type, whatsapp_onboarding_pending")
     .eq("user_id", userId)
     .eq("whatsapp_onboarding_pending", true)
     .maybeSingle();
 
   if (error) throw error;
-  return json({ profile: data, found: Boolean(data) });
+  return json({
+    profile: data ? { ...data, business_policy: getBusinessPolicy(data.business_type) } : data,
+    found: Boolean(data),
+  });
 };
 
 const handleMarkOnboardingSent = async (body: JsonRecord) => {
@@ -271,6 +338,40 @@ const handleRegisterAction = async (body: JsonRecord) => {
   if (!userId) return json({ error: "userId is required" }, 400);
 
   const admin = createAdminClient();
+  const explicitBusinessType = asString(body.businessType ?? body.business_type);
+  const { data: profile, error: profileError } = explicitBusinessType
+    ? { data: { business_type: explicitBusinessType }, error: null }
+    : await admin
+        .from("profiles")
+        .select("business_type")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+  if (profileError) throw profileError;
+  const policy = getBusinessPolicy(profile?.business_type);
+
+  if (!policy.allowedActions.includes(actionType)) {
+    return json({
+      ok: false,
+      blocked: true,
+      actionType,
+      businessType: policy.businessType,
+      message: `Acao ${actionType} nao faz parte do dashboard ${policy.label}.`,
+      policy,
+    }, 422);
+  }
+
+  if (actionType === "create_appointment" && policy.appointmentMode === "disabled") {
+    return json({
+      ok: false,
+      blocked: true,
+      actionType,
+      businessType: policy.businessType,
+      message: `Dashboard ${policy.label} nao usa agenda.`,
+      policy,
+    }, 422);
+  }
+
   let data: unknown = null;
   let error: unknown = null;
 
@@ -324,9 +425,50 @@ const handleRegisterAction = async (body: JsonRecord) => {
         price: asNumber(actionData.price),
         cost: asNumber(actionData.cost),
         category: asString(actionData.category) || null,
-        is_service: Boolean(actionData.is_service ?? false),
+        is_service: policy.appointmentMode === "enabled" || Boolean(actionData.is_service ?? false),
         description: asString(actionData.description ?? body.conversationText) || null,
       })
+      .select("*")
+      .single());
+
+    if (!error && data && policy.inventoryMode === "enabled") {
+      const product = data as JsonRecord;
+      const quantity = asNumber(actionData.quantity ?? actionData.stock_quantity, 0);
+      const minQuantity = asNumber(actionData.min_quantity, 0);
+      await admin
+        .from("inventory")
+        .upsert(
+          {
+            product_id: product.id,
+            quantity,
+            min_quantity: minQuantity,
+          },
+          { onConflict: "product_id" },
+        );
+    }
+  } else if (actionType === "adjust_inventory") {
+    if (policy.inventoryMode === "disabled") {
+      return json({
+        ok: false,
+        blocked: true,
+        actionType,
+        businessType: policy.businessType,
+        message: `Dashboard ${policy.label} nao usa estoque.`,
+        policy,
+      }, 422);
+    }
+    const productId = asString(actionData.product_id);
+    if (!productId) return json({ error: "product_id is required for adjust_inventory" }, 400);
+    ({ data, error } = await admin
+      .from("inventory")
+      .upsert(
+        {
+          product_id: productId,
+          quantity: asNumber(actionData.quantity),
+          min_quantity: asNumber(actionData.min_quantity),
+        },
+        { onConflict: "product_id" },
+      )
       .select("*")
       .single());
   } else if (actionType === "upsert_tax") {
@@ -348,13 +490,12 @@ const handleRegisterAction = async (body: JsonRecord) => {
       .select("*")
       .single());
   } else {
-    return json({ skipped: true, actionType });
+    return json({ skipped: true, actionType, businessType: policy.businessType, policy });
   }
 
   if (error) throw error;
-  return json({ ok: true, actionType, data });
+  return json({ ok: true, actionType, businessType: policy.businessType, policy, data });
 };
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
