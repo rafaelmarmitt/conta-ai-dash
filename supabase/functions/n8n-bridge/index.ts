@@ -152,7 +152,7 @@ const handleTriggerOnboarding = async (req: Request, body: JsonRecord) => {
 
   const webhookUrl =
     Deno.env.get("N8N_ONBOARDING_WEBHOOK_URL") ??
-    "https://rafamitt.app.n8n.cloud/webhook/conta-ai/zapi/onboarding";
+    "https://contamity.app.n8n.cloud/webhook/conta-ai/zapi/onboarding";
   if (webhookUrl) {
     const response = await fetch(webhookUrl, {
       method: "POST",
