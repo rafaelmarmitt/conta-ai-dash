@@ -58,13 +58,13 @@ export const SceneWhatsApp: React.FC = () => {
     <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
       {/* Side label */}
       <div style={{
-        position: "absolute", left: 48, top: 420, maxWidth: 300, fontFamily: FONT,
+        position: "absolute", left: 36, top: 380, maxWidth: 380, fontFamily: FONT,
         opacity: spring({ frame: frame - 20, fps, config: { damping: 20 } }),
       }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: "#0d7a6f", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 12 }}>
+        <div style={{ fontSize: 24, fontWeight: 700, color: "#0d7a6f", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 14 }}>
           1 · Você manda no chat
         </div>
-        <div style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.02, letterSpacing: "-0.03em", color: "#0f1f1d" }}>
+        <div style={{ fontSize: 44, fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", color: "#0f1f1d" }}>
           Digite e pronto.
         </div>
       </div>

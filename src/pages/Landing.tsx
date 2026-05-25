@@ -119,7 +119,7 @@ const Landing = () => {
               className="relative lg:scale-[1.28] lg:origin-left lg:-mr-20 xl:-mr-28"
             >
               <video
-                src="/conta-ai-hero.mp4?v=3"
+                src="/conta-ai-hero.mp4?v=4"
                 poster={heroMockup}
                 autoPlay
                 muted
