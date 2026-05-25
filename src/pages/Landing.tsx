@@ -116,9 +116,8 @@ const Landing = () => {
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
-              className="relative"
+              className="relative lg:scale-[1.18] lg:origin-left lg:-mr-16 xl:-mr-24"
             >
-              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/20 via-success/15 to-transparent rounded-[3rem] blur-2xl" />
               <video
                 src="/conta-ai-hero.mp4"
                 poster={heroMockup}
@@ -131,8 +130,9 @@ const Landing = () => {
                 height={720}
                 {...({ fetchpriority: "high" } as any)}
                 aria-label="Demonstração animada do Conta.AI"
-                className="w-full h-auto rounded-3xl drop-shadow-2xl aspect-video object-cover bg-card"
+                className="w-full h-auto aspect-video object-cover"
               />
+
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
