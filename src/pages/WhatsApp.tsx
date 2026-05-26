@@ -293,9 +293,6 @@ const WhatsAppPage = () => {
             <Clock className="h-5 w-5 text-coral mb-2" />
             <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Workflow n8n</p>
             <p className="text-sm font-bold mt-2 truncate">Conta.AI Z-API WhatsApp Agent</p>
-            <a className="text-xs text-primary font-semibold hover:underline" href={workflowUrl} target="_blank" rel="noreferrer">
-              Abrir workflow
-            </a>
           </Card>
         </div>
 
