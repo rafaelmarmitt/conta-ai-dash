@@ -585,6 +585,7 @@ export type Database = {
           direction: string
           error: string | null
           id: string
+          media_url: string | null
           message_type: string
           phone_number: string
           raw_payload: Json
@@ -601,6 +602,7 @@ export type Database = {
           direction: string
           error?: string | null
           id?: string
+          media_url?: string | null
           message_type?: string
           phone_number: string
           raw_payload?: Json
@@ -617,6 +619,7 @@ export type Database = {
           direction?: string
           error?: string | null
           id?: string
+          media_url?: string | null
           message_type?: string
           phone_number?: string
           raw_payload?: Json
@@ -646,6 +649,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      register_whatsapp_sale: {
+        Args: {
+          p_action_data: Json
+          p_business_type?: string
+          p_conversation_text?: string
+          p_customer_id: string
+          p_user_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {
