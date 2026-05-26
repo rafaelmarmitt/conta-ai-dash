@@ -281,7 +281,7 @@ const Index = () => {
           </div>
         </Card>
 
-        <Card className="p-6 shadow-card relative overflow-hidden gradient-coral text-primary-foreground border-0">
+        <Card className="p-6 shadow-card relative overflow-hidden gradient-coral text-foreground border-0">
           <div className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-white/10 blur-2xl animate-blob" />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
@@ -289,10 +289,10 @@ const Index = () => {
               <p className="text-xs font-bold uppercase tracking-wider">Sequência atual</p>
             </div>
             <p className="text-4xl font-extrabold">12 dias 🔥</p>
-            <p className="text-sm text-primary-foreground/85 mt-1 mb-4">registrando vendas no bot</p>
+            <p className="text-sm text-foreground/85 mt-1 mb-4">registrando vendas no bot</p>
             <div className="flex gap-1">
               {[...Array(7)].map((_, i) => (
-                <div key={i} className={`h-2 flex-1 rounded-full ${i < 5 ? "bg-foreground dark:bg-primary-foreground" : "bg-foreground/30 dark:bg-primary-foreground/30"}`} />
+                <div key={i} className={`h-2 flex-1 rounded-full ${i < 5 ? "bg-foreground" : "bg-foreground/30"}`} />
               ))}
             </div>
           </div>
