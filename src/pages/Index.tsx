@@ -336,12 +336,21 @@ const Index = () => {
           <Button variant="outline" className="rounded-xl">
             <Download className="h-4 w-4" /> Exportar
           </Button>
+          <NewExpenseDialog
+            trigger={
+              <Button variant="outline" className="rounded-xl">
+                <Plus className="h-4 w-4" /> Nova despesa
+              </Button>
+            }
+            onCreated={recarregar}
+          />
           <NewSaleDialog
             trigger={
               <Button variant="hero" className="rounded-xl">
                 <Plus className="h-4 w-4" /> Nova venda
               </Button>
             }
+            onCreated={recarregar}
           />
         </>
       }
