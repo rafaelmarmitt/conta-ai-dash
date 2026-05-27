@@ -243,9 +243,15 @@ const Catalogo = () => {
                 </div>
                 <p className="text-xs text-muted-foreground">Quem já comprou via bot</p>
               </div>
-              <div className="relative w-full sm:w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={buscaCli} onChange={(e) => setBuscaCli(e.target.value)} placeholder="Buscar cliente..." className="pl-9" />
+              <div className="flex gap-2 items-center flex-1 sm:flex-initial sm:w-auto">
+                <div className="relative flex-1 sm:w-72">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input value={buscaCli} onChange={(e) => setBuscaCli(e.target.value)} placeholder="Buscar cliente..." className="pl-9" />
+                </div>
+                <NewCustomerDialog
+                  trigger={<Button variant="success" className="rounded-xl shrink-0"><Plus className="h-4 w-4" /> Novo</Button>}
+                  onCreated={refetchClientes}
+                />
               </div>
             </div>
             <div className="space-y-2">
