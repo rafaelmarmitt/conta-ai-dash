@@ -13,6 +13,7 @@ import { Plus, Package, Users, Trash2, Pencil, Search, Phone, MessageCircle, Cro
 import { useState } from "react";
 import { toast } from "sonner";
 import { CopyButton } from "@/components/CopyButton";
+import { NewCustomerDialog } from "@/components/NewCustomerDialog";
 import { MockBadge } from "@/components/MockBadge";
 import { useSupabaseTable } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,7 +56,7 @@ const Catalogo = () => {
   const { data: produtos, isMock: produtosMock, refetch: refetchProdutos } = useSupabaseTable<ProdutoRow>(
     "products", PRODUTOS_MOCK, { orderBy: { column: "created_at", ascending: false } }
   );
-  const { data: clientes, isMock: clientesMock } = useSupabaseTable<ClienteRow>(
+  const { data: clientes, isMock: clientesMock, refetch: refetchClientes } = useSupabaseTable<ClienteRow>(
     "customers", CLIENTES_MOCK, { orderBy: { column: "total_spent", ascending: false } }
   );
 
@@ -242,9 +243,15 @@ const Catalogo = () => {
                 </div>
                 <p className="text-xs text-muted-foreground">Quem já comprou via bot</p>
               </div>
-              <div className="relative w-full sm:w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={buscaCli} onChange={(e) => setBuscaCli(e.target.value)} placeholder="Buscar cliente..." className="pl-9" />
+              <div className="flex gap-2 items-center flex-1 sm:flex-initial sm:w-auto">
+                <div className="relative flex-1 sm:w-72">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input value={buscaCli} onChange={(e) => setBuscaCli(e.target.value)} placeholder="Buscar cliente..." className="pl-9" />
+                </div>
+                <NewCustomerDialog
+                  trigger={<Button variant="success" className="rounded-xl shrink-0"><Plus className="h-4 w-4" /> Novo</Button>}
+                  onCreated={refetchClientes}
+                />
               </div>
             </div>
             <div className="space-y-2">
