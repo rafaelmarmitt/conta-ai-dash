@@ -12,7 +12,7 @@ import {
 import { Plus, Package, Users, Trash2, Pencil, Search, Phone, MessageCircle, Crown, Star } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { CopyButton } from "@/components/CopyButton";
+import { NewCustomerDialog } from "@/components/NewCustomerDialog";
 import { MockBadge } from "@/components/MockBadge";
 import { useSupabaseTable } from "@/hooks/useSupabaseData";
 import { supabase } from "@/integrations/supabase/client";
