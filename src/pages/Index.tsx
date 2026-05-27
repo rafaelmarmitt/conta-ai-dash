@@ -25,6 +25,7 @@ import { InfoTooltip } from "@/components/InfoTooltip";
 import { EmptyState } from "@/components/EmptyState";
 import { DasAlertCard } from "@/components/DasAlertCard";
 import { NewSaleDialog } from "@/components/NewSaleDialog";
+import { NewExpenseDialog } from "@/components/NewExpenseDialog";
 import mascot from "@/assets/mascot.png";
 
 const fluxoCaixa = [
@@ -163,6 +164,7 @@ const Index = () => {
   const [topProdutos, setTopProdutos] = useState<TopItem[]>(mockTopProdutos);
   const [streak, setStreak] = useState(12);
   const [insight, setInsight] = useState<string>("Cadastre vendas pelo WhatsApp para ver insights personalizados aqui.");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -309,7 +311,9 @@ const Index = () => {
       }
     };
     load();
-  }, [user, businessKey]);
+  }, [user, businessKey, refreshKey]);
+
+  const recarregar = () => setRefreshKey((k) => k + 1);
 
   const metaMensal = profile?.monthly_goal && profile.monthly_goal > 0 ? Number(profile.monthly_goal) : 8000;
   const atualMensal = values.faturamento;
