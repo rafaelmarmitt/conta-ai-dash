@@ -61,6 +61,7 @@ const Catalogo = () => {
   );
 
   const [open, setOpen] = useState(false);
+  const [savingProd, setSavingProd] = useState(false);
   const [novo, setNovo] = useState({ nome: "", preco: "", custo: "", categoria: "", emoji: "📦", quantidade: "0", minimo: "0" });
   const [busca, setBusca] = useState("");
   const [buscaCli, setBuscaCli] = useState("");
