@@ -498,10 +498,10 @@ const Index = () => {
             <Calendar className="h-4 w-4 text-info" />
             <h2 className="text-base font-bold text-foreground">Vendas da semana</h2>
           </div>
-          <p className="text-xs text-muted-foreground mb-4">Total: <span className="font-bold text-foreground">{formatBRL(4580)}</span></p>
+          <p className="text-xs text-muted-foreground mb-4">Total: <span className="font-bold text-foreground">{formatBRL(semanaTotal)}</span></p>
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={semana} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
+              <BarChart data={semanaData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="cBar" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="hsl(var(--success))" stopOpacity={1} />
