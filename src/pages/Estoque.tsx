@@ -6,10 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Box, Plus, AlertTriangle, TrendingDown, Search, Package, Filter } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { MockBadge } from "@/components/MockBadge";
+import { NewInventoryItemDialog } from "@/components/NewInventoryItemDialog";
 
 interface ItemEstoque {
   nome: string;
