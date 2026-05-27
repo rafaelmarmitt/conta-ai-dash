@@ -643,16 +643,6 @@ export type Database = {
     }
     Functions: {
       admin_metrics: { Args: never; Returns: Json }
-      register_whatsapp_sale: {
-        Args: {
-          p_action_data: Json
-          p_business_type?: string
-          p_conversation_text?: string
-          p_customer_id?: string
-          p_user_id: string
-        }
-        Returns: Json
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
