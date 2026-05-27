@@ -405,7 +405,7 @@ const Index = () => {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <Target className="h-4 w-4 text-primary shrink-0" />
-                  <p className="text-xs font-bold uppercase tracking-wider text-primary">Meta de Junho</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-primary">Meta de {MES_ABBR[new Date().getMonth()]}</p>
                   <InfoTooltip
                     label="Meta mensal"
                     content="Sua meta de faturamento bruto do mês. Ajuste em Perfil → Meta mensal."
