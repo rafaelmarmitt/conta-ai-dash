@@ -15,14 +15,9 @@ export function useIsAdmin() {
       return;
     }
     (async () => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+      const { data } = await supabase.rpc("is_current_user_admin");
       if (mounted) {
-        setIsAdmin(!!data);
+        setIsAdmin(data === true);
         setLoading(false);
       }
     })();
