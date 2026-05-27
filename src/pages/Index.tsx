@@ -189,9 +189,13 @@ const Index = () => {
           <Button variant="outline" className="rounded-xl">
             <Download className="h-4 w-4" /> Exportar
           </Button>
-          <Button variant="hero" className="rounded-xl">
-            <Plus className="h-4 w-4" /> Nova venda
-          </Button>
+          <NewSaleDialog
+            trigger={
+              <Button variant="hero" className="rounded-xl">
+                <Plus className="h-4 w-4" /> Nova venda
+              </Button>
+            }
+          />
         </>
       }
     >
