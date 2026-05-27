@@ -127,6 +127,22 @@ const TOP_ITEMS_BY_TYPE: Record<string, Array<{ nome: string; vendas: number; to
 
 const formatBRL = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+const MES_ABBR = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const DIA_ABBR = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+const timeAgo = (iso: string) => {
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 60) return "agora";
+  if (diff < 3600) return `Há ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `Há ${Math.floor(diff / 3600)}h`;
+  if (diff < 172800) return "Ontem";
+  return `Há ${Math.floor(diff / 86400)} dias`;
+};
+
+type Atividade = { tipo: "entrada" | "saida"; desc: string; cliente: string; valor: number; hora: string; emoji: string };
+type TopItem = { nome: string; vendas: number; total: number; cor: string };
+const BAR_COLORS = ["bg-primary", "bg-success", "bg-coral", "bg-info"];
+
 const Index = () => {
   const { profile, user } = useAuth();
   const hora = new Date().getHours();
@@ -135,26 +151,66 @@ const Index = () => {
   const businessKey = profile?.business_type ?? "outros";
   const config = BUSINESS_CONFIGS[businessKey];
   const mockValues = METRIC_VALUES[businessKey];
-  const atividades = ACTIVITIES_BY_TYPE[businessKey];
-  const topProdutos = TOP_ITEMS_BY_TYPE[businessKey];
+  const mockAtividades = ACTIVITIES_BY_TYPE[businessKey];
+  const mockTopProdutos = TOP_ITEMS_BY_TYPE[businessKey];
 
   const [values, setValues] = useState(mockValues);
   const [isMock, setIsMock] = useState(true);
+  const [fluxo, setFluxo] = useState(fluxoCaixa);
+  const [semanaData, setSemanaData] = useState(semana);
+  const [semanaTotal, setSemanaTotal] = useState(4580);
+  const [atividades, setAtividades] = useState<Atividade[]>(mockAtividades);
+  const [topProdutos, setTopProdutos] = useState<TopItem[]>(mockTopProdutos);
+  const [streak, setStreak] = useState(12);
+  const [insight, setInsight] = useState<string>("Cadastre vendas pelo WhatsApp para ver insights personalizados aqui.");
 
   useEffect(() => {
     const load = async () => {
       if (!user) return;
-      const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
-      const [{ data: sales }, { data: expenses }, { count: customersCount }] = await Promise.all([
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const sixMonthsStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+      const weekStart = new Date(now); weekStart.setDate(now.getDate() - 6); weekStart.setHours(0, 0, 0, 0);
+      const streakStart = new Date(now); streakStart.setDate(now.getDate() - 60); streakStart.setHours(0, 0, 0, 0);
+
+      const [
+        { data: salesMonth },
+        { data: expensesMonth },
+        { count: customersCount },
+        { data: sales6m },
+        { data: expenses6m },
+        { data: salesWeek },
+        { data: expensesRecent },
+        { data: salesRecent },
+        { data: items },
+        { data: salesStreak },
+      ] = await Promise.all([
         supabase.from("sales").select("total").eq("user_id", user.id).gte("sold_at", monthStart.toISOString()),
         supabase.from("expenses").select("amount").eq("user_id", user.id).gte("expense_date", monthStart.toISOString().slice(0, 10)),
         supabase.from("customers").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("sales").select("total,sold_at").eq("user_id", user.id).gte("sold_at", sixMonthsStart.toISOString()),
+        supabase.from("expenses").select("amount,expense_date").eq("user_id", user.id).gte("expense_date", sixMonthsStart.toISOString().slice(0, 10)),
+        supabase.from("sales").select("total,sold_at").eq("user_id", user.id).gte("sold_at", weekStart.toISOString()),
+        supabase.from("expenses").select("amount,description,expense_date,category").eq("user_id", user.id).order("expense_date", { ascending: false }).limit(10),
+        supabase.from("sales").select("id,total,sold_at,customer_id,customers(name)").eq("user_id", user.id).order("sold_at", { ascending: false }).limit(10),
+        supabase.from("sale_items").select("product_name,quantity,subtotal,sales!inner(user_id,sold_at)").eq("sales.user_id", user.id).gte("sales.sold_at", monthStart.toISOString()),
+        supabase.from("sales").select("sold_at").eq("user_id", user.id).gte("sold_at", streakStart.toISOString()).order("sold_at", { ascending: false }),
       ]);
-      const hasReal = (sales && sales.length > 0) || (expenses && expenses.length > 0) || (customersCount ?? 0) > 0;
-      if (!hasReal) { setValues(mockValues); setIsMock(true); return; }
-      const fat = (sales || []).reduce((s, v: any) => s + Number(v.total || 0), 0);
-      const desp = (expenses || []).reduce((s, v: any) => s + Number(v.amount || 0), 0);
-      const ticket = sales && sales.length ? fat / sales.length : 0;
+
+      const hasReal = (salesMonth && salesMonth.length > 0) || (expensesMonth && expensesMonth.length > 0) || (customersCount ?? 0) > 0;
+      if (!hasReal) {
+        setValues(mockValues); setIsMock(true);
+        setAtividades(mockAtividades); setTopProdutos(mockTopProdutos);
+        setFluxo(fluxoCaixa); setSemanaData(semana); setSemanaTotal(4580);
+        setStreak(12);
+        return;
+      }
+
+      setIsMock(false);
+
+      const fat = (salesMonth || []).reduce((s, v: any) => s + Number(v.total || 0), 0);
+      const desp = (expensesMonth || []).reduce((s, v: any) => s + Number(v.amount || 0), 0);
+      const ticket = salesMonth && salesMonth.length ? fat / salesMonth.length : 0;
       setValues({
         ...mockValues,
         faturamento: fat,
@@ -163,7 +219,94 @@ const Index = () => {
         clientes: customersCount ?? 0,
         ticket: Math.round(ticket),
       });
-      setIsMock(false);
+
+      const fluxoMap: Record<string, { entradas: number; saidas: number }> = {};
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        fluxoMap[`${d.getFullYear()}-${d.getMonth()}`] = { entradas: 0, saidas: 0 };
+      }
+      (sales6m || []).forEach((s: any) => {
+        const d = new Date(s.sold_at);
+        const k = `${d.getFullYear()}-${d.getMonth()}`;
+        if (fluxoMap[k]) fluxoMap[k].entradas += Number(s.total || 0);
+      });
+      (expenses6m || []).forEach((e: any) => {
+        const d = new Date(e.expense_date);
+        const k = `${d.getFullYear()}-${d.getMonth()}`;
+        if (fluxoMap[k]) fluxoMap[k].saidas += Number(e.amount || 0);
+      });
+      setFluxo(Object.entries(fluxoMap).map(([k, v]) => {
+        const [, m] = k.split("-").map(Number);
+        return { mes: MES_ABBR[m], entradas: Math.round(v.entradas), saidas: Math.round(v.saidas) };
+      }));
+
+      const weekMap: Record<string, number> = {};
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now); d.setDate(now.getDate() - i);
+        weekMap[d.toDateString()] = 0;
+      }
+      let weekTotal = 0;
+      (salesWeek || []).forEach((s: any) => {
+        const k = new Date(s.sold_at).toDateString();
+        if (k in weekMap) {
+          weekMap[k] += Number(s.total || 0);
+          weekTotal += Number(s.total || 0);
+        }
+      });
+      setSemanaData(Object.entries(weekMap).map(([k, v]) => ({ dia: DIA_ABBR[new Date(k).getDay()], vendas: Math.round(v) })));
+      setSemanaTotal(Math.round(weekTotal));
+
+      const acts: Atividade[] = [
+        ...(salesRecent || []).map((s: any) => ({
+          tipo: "entrada" as const,
+          desc: "Venda registrada",
+          cliente: s.customers?.name || "Cliente",
+          valor: Number(s.total || 0),
+          hora: timeAgo(s.sold_at),
+          emoji: "💰",
+          _ts: new Date(s.sold_at).getTime(),
+        })),
+        ...(expensesRecent || []).map((e: any) => ({
+          tipo: "saida" as const,
+          desc: e.description || "Despesa",
+          cliente: e.category || "Despesa",
+          valor: Number(e.amount || 0),
+          hora: timeAgo(e.expense_date),
+          emoji: "📤",
+          _ts: new Date(e.expense_date).getTime(),
+        })),
+      ].sort((a: any, b: any) => b._ts - a._ts).slice(0, 6);
+      setAtividades(acts.length ? acts : mockAtividades);
+
+      const prodMap: Record<string, { vendas: number; total: number }> = {};
+      (items || []).forEach((it: any) => {
+        const n = it.product_name || "Item";
+        if (!prodMap[n]) prodMap[n] = { vendas: 0, total: 0 };
+        prodMap[n].vendas += Number(it.quantity || 0);
+        prodMap[n].total += Number(it.subtotal || 0);
+      });
+      const top = Object.entries(prodMap)
+        .sort((a, b) => b[1].total - a[1].total)
+        .slice(0, 4)
+        .map(([nome, v], i) => ({ nome, vendas: v.vendas, total: v.total, cor: BAR_COLORS[i] }));
+      setTopProdutos(top.length ? top : mockTopProdutos);
+
+      const days = new Set((salesStreak || []).map((s: any) => new Date(s.sold_at).toDateString()));
+      let st = 0;
+      const cursor = new Date(now);
+      while (days.has(cursor.toDateString())) {
+        st++;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      setStreak(st);
+
+      if (top.length) {
+        setInsight(`Seu produto top é "${top[0].nome}" com ${formatBRL(top[0].total)} no mês. Considere destacá-lo ou criar combos.`);
+      } else if (fat > desp) {
+        setInsight(`Lucro positivo de ${formatBRL(fat - desp)} este mês. Continue assim!`);
+      } else if (desp > fat) {
+        setInsight(`Atenção: despesas (${formatBRL(desp)}) acima do faturamento. Revise os custos.`);
+      }
     };
     load();
   }, [user, businessKey]);
