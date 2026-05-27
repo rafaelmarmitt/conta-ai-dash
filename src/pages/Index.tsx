@@ -596,7 +596,7 @@ const Index = () => {
             <div className="flex items-start gap-2">
               <Sparkles className="h-4 w-4 text-info mt-0.5 shrink-0" />
               <p className="text-xs text-foreground">
-                <span className="font-bold">Dica IA:</span> seus brigadeiros vendem mais aos finais de semana. Que tal criar um combo?
+                <span className="font-bold">Dica IA:</span> {insight}
               </p>
             </div>
           </div>
