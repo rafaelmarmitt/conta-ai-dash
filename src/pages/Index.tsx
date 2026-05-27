@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   TrendingUp, TrendingDown, Wallet, AlertCircle, MessageCircle,
   ArrowUpRight, ArrowDownRight, Plus, Download, Sparkles,
@@ -27,6 +28,7 @@ import { DasAlertCard } from "@/components/DasAlertCard";
 import { NewSaleDialog } from "@/components/NewSaleDialog";
 import { NewExpenseDialog } from "@/components/NewExpenseDialog";
 import mascot from "@/assets/mascot.png";
+import { useAchievements } from "@/hooks/useAchievements";
 
 const fluxoCaixa = [
   { mes: "Jan", entradas: 4200, saidas: 2100 },
@@ -165,6 +167,9 @@ const Index = () => {
   const [streak, setStreak] = useState(12);
   const [insight, setInsight] = useState<string>("Cadastre vendas pelo WhatsApp para ver insights personalizados aqui.");
   const [refreshKey, setRefreshKey] = useState(0);
+  const { newlyUnlocked, markSeen } = useAchievements(refreshKey);
+  const [activeAchievementId, setActiveAchievementId] = useState<string | null>(null);
+  const activeAchievement = newlyUnlocked.find((achievement) => achievement.id === activeAchievementId) ?? newlyUnlocked[0] ?? null;
 
   useEffect(() => {
     const load = async () => {
@@ -313,6 +318,17 @@ const Index = () => {
     load();
   }, [user, businessKey, refreshKey]);
 
+  useEffect(() => {
+    if (!activeAchievementId && newlyUnlocked.length > 0) {
+      setActiveAchievementId(newlyUnlocked[0].id);
+    }
+  }, [activeAchievementId, newlyUnlocked]);
+
+  const closeAchievementPopup = () => {
+    if (activeAchievement) markSeen([activeAchievement.id]);
+    setActiveAchievementId(null);
+  };
+
   const recarregar = () => setRefreshKey((k) => k + 1);
 
   const metaMensal = profile?.monthly_goal && profile.monthly_goal > 0 ? Number(profile.monthly_goal) : 8000;
@@ -328,6 +344,29 @@ const Index = () => {
   return (
     <>
       <Seo title="Dashboard · Conta.AI" description="Visão geral do seu MEI: vendas, despesas, fluxo de caixa e impostos em tempo real." path="/dashboard" />
+      <Dialog open={Boolean(activeAchievement)} onOpenChange={(open) => { if (!open) closeAchievementPopup(); }}>
+        <DialogContent className="sm:max-w-md text-center overflow-hidden">
+          {activeAchievement && (
+            <>
+              <DialogHeader className="items-center text-center">
+                <div className="mx-auto h-16 w-16 rounded-2xl gradient-coral flex items-center justify-center text-4xl shadow-coral mb-2">
+                  {activeAchievement.emoji}
+                </div>
+                <DialogTitle className="text-xl">Conquista desbloqueada!</DialogTitle>
+                <DialogDescription>
+                  {activeAchievement.titulo} - {activeAchievement.desc}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="rounded-xl bg-warning-soft border border-warning/30 p-3 text-sm font-semibold text-foreground">
+                {activeAchievement.detail}
+              </div>
+              <Button variant="hero" className="w-full" onClick={closeAchievementPopup}>
+                Continuar
+              </Button>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     <DashboardLayout
       title={`${saudacao}, ${firstName}! 👋`}
       subtitle={profile?.business_name ? `${profile.business_name} · ${config.label}` : "Aqui está o resumo do seu negócio em tempo real"}

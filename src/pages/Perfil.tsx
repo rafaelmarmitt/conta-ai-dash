@@ -18,6 +18,7 @@ import { CopyButton } from "@/components/CopyButton";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAchievements } from "@/hooks/useAchievements";
 
 const Perfil = () => {
   const { profile } = useAuth();
@@ -34,13 +35,7 @@ const Perfil = () => {
   const atual = 7300;
   const pct = Math.round((atual / meta) * 100);
 
-  const conquistas = [
-    { titulo: "Primeira venda", desc: "Você registrou sua 1ª venda", emoji: "🎉", done: true },
-    { titulo: "100 vendas", desc: "Atingiu a marca de 100 vendas", emoji: "💯", done: true },
-    { titulo: "DAS em dia", desc: "5 meses pagando em dia", emoji: "✅", done: true },
-    { titulo: "Meta batida", desc: "Bata a meta mensal 3x", emoji: "🎯", done: false },
-    { titulo: "Cliente fiel", desc: "10 clientes recorrentes", emoji: "💎", done: false },
-  ];
+  const { achievements: conquistas, loading: conquistasLoading } = useAchievements();
 
   return (
     <>
@@ -183,13 +178,13 @@ const Perfil = () => {
               </div>
               <div>
                 <h2 className="text-base font-bold">Suas conquistas</h2>
-                <p className="text-xs text-muted-foreground">{conquistas.filter((c) => c.done).length} de {conquistas.length} desbloqueadas</p>
+                <p className="text-xs text-muted-foreground">{conquistasLoading ? "Calculando..." : `${conquistas.filter((c) => c.done).length} de ${conquistas.length} desbloqueadas`}</p>
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {conquistas.map((c, i) => (
                 <Card
-                  key={i}
+                  key={c.id}
                   className={`p-5 border-2 transition-smooth animate-fade-in ${
                     c.done
                       ? "border-warning/40 bg-warning-soft/40 hover-lift"
@@ -200,6 +195,10 @@ const Perfil = () => {
                   <div className="text-5xl mb-3">{c.emoji}</div>
                   <p className="font-bold text-foreground">{c.titulo}</p>
                   <p className="text-xs text-muted-foreground mt-1">{c.desc}</p>
+                  <div className="mt-4 space-y-2">
+                    <Progress value={Math.min((c.progress / c.target) * 100, 100)} className="h-2" />
+                    <p className="text-[11px] font-semibold text-muted-foreground">{c.detail}</p>
+                  </div>
                   {c.done ? (
                     <Badge className="mt-3 bg-warning text-warning-foreground border-0">
                       <Award className="h-3 w-3 mr-1" /> Desbloqueada
@@ -243,7 +242,7 @@ const Perfil = () => {
                 </div>
               </div>
               <Button variant="hero" className="w-full">
-                <Sparkles className="h-4 w-4" /> Upgrade para Pro � R$ 50/m�s
+                <Sparkles className="h-4 w-4" /> Upgrade para Pro - R$ 50/mes
               </Button>
               <p className="text-[11px] text-muted-foreground text-center mt-3">
                 Mensagens ilimitadas · Múltiplos números · IA avançada
