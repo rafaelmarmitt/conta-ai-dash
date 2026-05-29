@@ -130,11 +130,11 @@ export function useAchievements(refreshKey?: unknown) {
     const monthlyGoal = Number(profile?.monthly_goal || 0);
 
     const salesForGoalsPromise = monthlyGoal > 0
-      ? supabase.from("sales").select("total,sold_at,status").eq("user_id", user.id).neq("status", "cancelada")
+      ? supabase.from("sales").select("total,sold_at,status").eq("user_id", user.id).neq("status", "cancelado")
       : Promise.resolve({ data: [] as Array<{ total: number; sold_at: string; status?: string }> });
 
     const [{ count: salesCount }, { count: customersCount }, { data: paidTaxes }, { data: salesForGoals }] = await Promise.all([
-      supabase.from("sales").select("id", { count: "exact", head: true }).eq("user_id", user.id).neq("status", "cancelada"),
+      supabase.from("sales").select("id", { count: "exact", head: true }).eq("user_id", user.id).neq("status", "cancelado"),
       supabase.from("customers").select("id", { count: "exact", head: true }).eq("user_id", user.id),
       supabase.from("taxes").select("id").eq("user_id", user.id).eq("status", "pago"),
       salesForGoalsPromise,

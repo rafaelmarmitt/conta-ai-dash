@@ -63,7 +63,7 @@ const Perfil = () => {
         .from("sales")
         .select("total,sold_at,status")
         .eq("user_id", user.id)
-        .neq("status", "cancelada")
+        .neq("status", "cancelado")
         .gte("sold_at", fiveMonthsStart.toISOString());
 
       if (error) {
