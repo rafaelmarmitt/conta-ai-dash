@@ -643,7 +643,6 @@ export type Database = {
     }
     Functions: {
       admin_metrics: { Args: never; Returns: Json }
-      is_current_user_admin: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -651,6 +650,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_current_user_admin: { Args: never; Returns: boolean }
       register_whatsapp_sale: {
         Args: {
           p_action_data: Json
